@@ -139,19 +139,35 @@ namespace MiPokemonApp.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> SendEmail(string emailTo, string subject, string body)
+        public async Task<IActionResult> SendEmail(
+            [FromForm] string emailTo,
+            [FromForm] string subject,
+            [FromForm] string body)
         {
+            if (string.IsNullOrWhiteSpace(emailTo) ||
+                string.IsNullOrWhiteSpace(subject) ||
+                string.IsNullOrWhiteSpace(body))
+            {
+                TempData["ErrorMessage"] = "Todos los campos son obligatorios.";
+                return RedirectToAction(nameof(Index));
+            }
+
             try
             {
                 await _emailService.SendEmailAsync(emailTo, subject, body);
                 TempData["SuccessMessage"] = "Correo enviado correctamente.";
             }
-            catch
+            catch (Exception ex)
             {
+                // Puedes loguear el error si tienes un logger:
+                // _logger.LogError(ex, "Error al enviar el correo.");
                 TempData["ErrorMessage"] = "Error al enviar el correo.";
             }
+
             return RedirectToAction(nameof(Index));
         }
+
+
 
         [HttpPost]
         public async Task<IActionResult> SendBulkEmail(List<string> emailList, string subject, string body)
