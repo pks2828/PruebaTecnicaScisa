@@ -1,6 +1,12 @@
-﻿namespace MiPokemonApp.Views.Shared
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+
+namespace MiPokemonApp.Views.Shared
 {
-    public class _Layout
+    public class _LayoutModel : PageModel
     {
+        public void OnGet()
+        {
+        }
     }
 }

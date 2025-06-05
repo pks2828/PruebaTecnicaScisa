@@ -114,9 +114,9 @@ function openDetailModal() {
     console.log("openDetailModal llamado");
     const modal = document.getElementById('detailModal');
     if (modal) {
-        modal.classList.add('show');
+        modal.classList.add('active');
         modal.setAttribute('aria-hidden', 'false');
-        console.log("Modal de detalle abierto");
+        console.log("Modal de detalle abierto (clase .active añadida)");
     } else {
         console.error("Modal de detalle no encontrado");
     }
@@ -126,11 +126,12 @@ function closeDetailModal() {
     console.log("closeDetailModal llamado");
     const modal = document.getElementById('detailModal');
     if (modal) {
-        modal.classList.remove('show');
+        modal.classList.remove('active');
         modal.setAttribute('aria-hidden', 'true');
-        console.log("Modal de detalle cerrado");
+        console.log("Modal de detalle cerrado (clase .active removida)");
     }
 }
+
 
 // ========== FUNCIONES PARA MODAL DE CORREO INDIVIDUAL ==========
 function openEmailModal(pokemonId, pokemonName) {
@@ -142,7 +143,7 @@ function openEmailModal(pokemonId, pokemonName) {
         return;
     }
 
-    // Rellenas campos (ya lo tienes bien)
+    // Rellenar campos
     const pokemonIdField = document.getElementById('emailPokemonId');
     const pokemonNameField = document.getElementById('pokemonName');
     const emailToField = document.getElementById('emailTo');
@@ -151,40 +152,38 @@ function openEmailModal(pokemonId, pokemonName) {
     if (pokemonNameField) pokemonNameField.value = pokemonName || '';
     if (emailToField) emailToField.value = '';
 
-    // ➔ En lugar de modal.style.display = 'block';
-    modal.classList.add('show');
+    modal.classList.add('active');
     modal.setAttribute('aria-hidden', 'false');
-    console.log("Modal de correo abierto (clase .show añadida)");
+    console.log("Modal de correo abierto (clase .active añadida)");
 }
 
 function closeEmailModal() {
+    console.log("closeEmailModal llamado");
     const modal = document.getElementById('emailModal');
-    if (!modal) {
+    if (modal) {
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+        console.log("Modal de correo cerrado (clase .active removida)");
+    } else {
         console.error("Modal emailModal no encontrado para cerrar");
-        return;
     }
-    modal.classList.remove('show');
-    modal.setAttribute('aria-hidden', 'true');
-    console.log("Modal de correo cerrado (clase .show removida)");
 }
 
 // ========== FUNCIONES PARA MODAL DE CORREO MASIVO ==========
 function openBulkEmailModal() {
     console.log("openBulkEmailModal llamado");
 
-    // Limpiar el textarea
     const emailListField = document.getElementById('emailList');
     if (emailListField) {
         emailListField.value = '';
         console.log("Campo emailList limpiado");
     }
 
-    // Agregar la clase 'show' para que el overlay pase a display:flex
     const modal = document.getElementById('bulkEmailModal');
     if (modal) {
-        modal.classList.add('show');
+        modal.classList.add('active');
         modal.setAttribute('aria-hidden', 'false');
-        console.log("Modal bulk email abierto (clase .show añadida)");
+        console.log("Modal bulk email abierto (clase .active añadida)");
     } else {
         console.error("Modal bulkEmailModal no encontrado");
     }
@@ -194,9 +193,9 @@ function closeBulkEmailModal() {
     console.log("closeBulkEmailModal llamado");
     const modal = document.getElementById('bulkEmailModal');
     if (modal) {
-        modal.classList.remove('show');
+        modal.classList.remove('active');
         modal.setAttribute('aria-hidden', 'true');
-        console.log("Modal bulk email cerrado (clase .show removida)");
+        console.log("Modal bulk email cerrado (clase .active removida)");
     } else {
         console.error("Modal bulkEmailModal no encontrado para cerrar");
     }
