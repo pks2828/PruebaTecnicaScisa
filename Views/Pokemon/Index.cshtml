@@ -209,40 +209,64 @@
 
     <!-- ============== MODAL CORREO INDIVIDUAL =============== -->
     <div id="emailModal" class="modal-overlay">
-        <div class="modal-container">
+        <div class="modal-container" style="max-width: 600px;">
             <div class="modal-header d-flex justify-content-between align-items-center">
                 <h5 class="modal-title">Enviar Correo</h5>
                 <button type="button" onclick="closeEmailModal()" class="btn-close"></button>
             </div>
-            <form method="post" asp-action="SendEmail" asp-controller="Pokemon" class="modal-body">
-                @Html.AntiForgeryToken()
+            <div class="modal-body">
+                <!-- Formulario de envío -->
+                <form method="post" asp-action="SendEmail" asp-controller="Pokemon">
+                    @Html.AntiForgeryToken()
 
-                <input type="hidden" name="pokemonId" id="emailPokemonId" value="" />
-                <input type="hidden" name="subject" value="Información de Pokémon" />
-                <input type="hidden" name="body" value="¡Hola! Aquí tienes información sobre tu Pokémon favorito." />
+                    <input type="hidden" name="pokemonId" id="emailPokemonId" value="" />
 
-                <div class="mb-3">
-                    <label for="pokemonName" class="form-label">Pokémon:</label>
-                    <input type="text"
-                           class="form-control"
-                           id="pokemonName"
-                           readonly />
-                </div>
+                    <div class="mb-3">
+                        <label for="pokemonName" class="form-label">Pokémon:</label>
+                        <input type="text"
+                               class="form-control"
+                               id="pokemonName"
+                               readonly />
+                    </div>
 
-                <div class="mb-3">
-                    <label for="emailTo" class="form-label">Correo destino:</label>
-                    <input type="email"
-                           class="form-control"
-                           name="emailTo"
-                           id="emailTo"
-                           required />
-                </div>
+                    <div class="mb-3">
+                        <label for="emailTo" class="form-label">Correo destino:</label>
+                        <input type="email"
+                               class="form-control"
+                               name="emailTo"
+                               id="emailTo"
+                               required />
+                    </div>
 
-                <div class="modal-footer d-flex justify-content-end gap-2">
-                    <button type="submit" class="btn btn-primary">Enviar</button>
-                    <button type="button" onclick="closeEmailModal()" class="btn btn-secondary">Cerrar</button>
-                </div>
-            </form>
+                    <div class="mb-3">
+                        <label for="emailSubject" class="form-label">Asunto:</label>
+                        <input type="text"
+                               class="form-control"
+                               name="subject"
+                               id="emailSubject"
+                               value="Información de Pokémon"
+                               required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="emailBody" class="form-label">Mensaje adicional:</label>
+                        <textarea class="form-control"
+                                  name="body"
+                                  id="emailBody"
+                                  rows="3"
+                                  placeholder="Escribe un mensaje adicional (opcional)">¡Hola! Aquí tienes información sobre este increíble Pokémon.</textarea>
+                    </div>
+
+                    <div class="modal-footer d-flex justify-content-end gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Enviar
+                        </button>
+                        <button type="button" onclick="closeEmailModal()" class="btn btn-secondary">
+                            Cerrar
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -253,9 +277,34 @@
                 <h5 class="modal-title">Enviar Correo Masivo</h5>
                 <button type="button" onclick="closeBulkEmailModal()" class="btn-close"></button>
             </div>
+
+            <!-- Al form se le envía: emailList, subject y body -->
             <form method="post" asp-action="SendBulkEmail" class="modal-body">
                 @Html.AntiForgeryToken()
 
+                <!-- Campo para el Asunto -->
+                <div class="mb-3">
+                    <label for="subject" class="form-label">Asunto:</label>
+                    <input type="text"
+                           class="form-control"
+                           id="subject"
+                           name="subject"
+                           placeholder="Escribe el asunto del correo"
+                           required />
+                </div>
+
+                <!-- Campo para el Cuerpo del correo -->
+                <div class="mb-3">
+                    <label for="body" class="form-label">Cuerpo del correo:</label>
+                    <textarea class="form-control"
+                              id="body"
+                              name="body"
+                              rows="4"
+                              placeholder="Escribe el mensaje que recibirán los destinatarios"
+                              required></textarea>
+                </div>
+
+                <!-- Campo para la lista de correos separados por coma -->
                 <div class="mb-3">
                     <label for="emailList" class="form-label">Correos (separados por coma):</label>
                     <textarea class="form-control"
@@ -266,9 +315,6 @@
                               required></textarea>
                 </div>
 
-                <input type="hidden" name="subject" value="Pokémon Destacados" />
-                <input type="hidden" name="body" value="¡Conoce los Pokémon más geniales de la semana!" />
-
                 <div class="modal-footer d-flex justify-content-end gap-2">
                     <button type="submit" class="btn btn-primary">Enviar Masivo</button>
                     <button type="button" onclick="closeBulkEmailModal()" class="btn btn-secondary">Cerrar</button>
@@ -276,6 +322,7 @@
             </form>
         </div>
     </div>
+
 </div>
 
 <script src="~/js/pokemon-list.js"></script>

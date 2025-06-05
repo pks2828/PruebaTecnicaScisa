@@ -157,10 +157,8 @@ namespace MiPokemonApp.Controllers
                 await _emailService.SendEmailAsync(emailTo, subject, body);
                 TempData["SuccessMessage"] = "Correo enviado correctamente.";
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // Puedes loguear el error si tienes un logger:
-                // _logger.LogError(ex, "Error al enviar el correo.");
                 TempData["ErrorMessage"] = "Error al enviar el correo.";
             }
 
@@ -170,19 +168,48 @@ namespace MiPokemonApp.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> SendBulkEmail(List<string> emailList, string subject, string body)
+        public async Task<IActionResult> SendBulkEmail(
+            [FromForm] string emailList,   // Recibe el texto "a@ejemplo.com, b@ejemplo.com, c@ejemplo.com"
+            [FromForm] string subject,
+            [FromForm] string body)
         {
+            // 1. Validar que no vengan campos vacíos
+            if (string.IsNullOrWhiteSpace(emailList) ||
+                string.IsNullOrWhiteSpace(subject) ||
+                string.IsNullOrWhiteSpace(body))
+            {
+                TempData["ErrorMessage"] = "Todos los campos (correos, asunto y cuerpo) son obligatorios.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // 2. Separar el string de correos por comas, limpiando espacios en blanco
+            //    y descartando posibles entradas vacías
+            List<string> listaDeCorreos = emailList
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)   // parte por coma
+                .Select(e => e.Trim())                              // quita espacios sobrantes
+                .Where(e => !string.IsNullOrWhiteSpace(e))          // descarta cadenas vacías
+                .ToList();
+
+            if (!listaDeCorreos.Any())
+            {
+                TempData["ErrorMessage"] = "No se detectaron direcciones de correo válidas.";
+                return RedirectToAction(nameof(Index));
+            }
+
             try
             {
-                await _emailService.SendBulkEmailAsync(emailList, subject, body);
+                // 3. Llamar al servicio con la lista ya convertida
+                await _emailService.SendBulkEmailAsync(listaDeCorreos, subject, body);
                 TempData["SuccessMessage"] = "Correos enviados correctamente.";
             }
-            catch
+            catch (Exception)
             {
                 TempData["ErrorMessage"] = "Error al enviar correos masivos.";
             }
+
             return RedirectToAction(nameof(Index));
         }
+
 
         [HttpGet]
         public async Task<IActionResult> Detail(int id)
