@@ -9,3 +9,5 @@ obj/
 *.cache
 *.log
 *.vs/
+appsettings.json
+appsettings.Development.json
