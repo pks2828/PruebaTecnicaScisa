@@ -1,0 +1,263 @@
+﻿@model MiPokemonApp.Models.ViewModels.PokemonFilterViewModel
+
+@{
+    ViewData["Title"] = "Listado de Pokémon";
+}
+
+<link rel="stylesheet" href="~/css/pokemon-list.css" />
+
+<h2 class="pokemon-list-title">Listado de Pokémon</h2>
+
+<!-- Mensajes de éxito o error -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<!--
+    Toolbar: aquí se agrupan
+    - los filtros + “Exportar a Excel” (izquierda)
+    - el botón “Enviar Correo a Todos” (derecha)
+-->
+<div class="toolbar">
+    <!-- Bloque izquierdo: filtros + Exportar a Excel -->
+    <div class="toolbar-left">
+        <!-- FORMULARIO DE FILTROS -->
+        <form method="get" asp-action="Index" class="pokemon-filter-form">
+            <div class="filter-field">
+                <label for="nameFilter">Filtrar por Nombre:</label>
+                <input type="text"
+                       name="nameFilter"
+                       value="@Model.NameFilter"
+                       class="form-control"
+                       placeholder="Ej. pikachu" />
+            </div>
+
+            <div class="filter-field">
+                <label for="speciesFilter">Filtrar por Especie:</label>
+                <select name="speciesFilter" class="form-select">
+                    <option value="">-- Todos --</option>
+                    @foreach (var sp in Model.SpeciesOptions)
+                    {
+                        <option value="@sp" @(sp == Model.SelectedSpecies ? "selected" : "")>
+                            @sp
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <div class="filter-field">
+                <button type="submit" class="btn-primary">Aplicar</button>
+            </div>
+        </form>
+
+        <!-- FORMULARIO DE “Exportar a Excel” -->
+        <form method="post" asp-action="ExportToExcel" class="pokemon-export-form">
+            <input type="hidden" name="excelRows" id="excelRowsJson" />
+            <button type="submit" class="btn-success" onclick="prepareExcelRows()">
+                Exportar a Excel
+            </button>
+        </form>
+    </div>
+
+    <!-- Botón “Enviar Correo a Todos” (derecha) -->
+    <button class="btn-send-all" data-bs-toggle="modal" data-bs-target="#bulkEmailModal">
+        Enviar Correo a Todos
+    </button>
+</div>
+
+<!-- ======== TABLA DE POKÉMON ======== -->
+<table class="table table-striped pokemon-table">
+    <thead>
+        <tr>
+            <th>Imagen</th>
+            <th>Nombre</th>
+            <th>Especie</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model.Pokemons)
+        {
+            <tr>
+                <td>
+                    <img src="@p.ImageUrl" alt="@p.Name" width="64" height="64" class="pokemon-img" />
+                </td>
+                <td class="text-capitalize">@p.Name</td>
+                <td class="text-capitalize">@p.SpeciesName</td>
+                <td>
+                    <button class="btn btn-sm btn-primary" onclick="showDetail(@p.Id)">
+                        Detalle
+                    </button>
+                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#emailModal">
+                        Enviar Correo
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<nav aria-label="Paginación">
+    <ul class="pagination">
+        @{
+            int totalPages = (int)Math.Ceiling(Model.TotalCount / (double)Model.PageSize);
+
+            // “Anterior” (deshabilitado si page 1)
+            if (Model.PageNumber > 1)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="@Url.Action("Index", new { nameFilter = Model.NameFilter, speciesFilter = Model.SelectedSpecies, page = Model.PageNumber - 1 })">
+                        &laquo;
+                    </a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item disabled">
+                    <span class="page-link">&laquo;</span>
+                </li>
+            }
+
+            // Botones de página 1, 2, 3, ...
+            for (int i = 1; i <= totalPages; i++)
+            {
+                if (i == Model.PageNumber)
+                {
+                    <li class="page-item active">
+                        <span class="page-link">@i</span>
+                    </li>
+                }
+                else
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="@Url.Action("Index", new { nameFilter = Model.NameFilter, speciesFilter = Model.SelectedSpecies, page = i })">
+                            @i
+                        </a>
+                    </li>
+                }
+            }
+
+            // “Siguiente” (deshabilitado si es la última página)
+            if (Model.PageNumber < totalPages)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="@Url.Action("Index", new { nameFilter = Model.NameFilter, speciesFilter = Model.SelectedSpecies, page = Model.PageNumber + 1 })">
+                        &raquo;
+                    </a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item disabled">
+                    <span class="page-link">&raquo;</span>
+                </li>
+            }
+        }
+    </ul>
+</nav>
+
+<!-- ======== MODAL DETALLE ======== -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalle de Pokémon</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detailModalBody">
+                <!-- Se inyecta el partial de detalles -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======== MODAL CORREO INDIVIDUAL ======== -->
+<div class="modal fade" id="emailModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="post" asp-action="SendEmail" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Enviar Correo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="subject" value="Información de Pokémon" />
+                <input type="hidden" name="body" value="¡Hola! Aquí tienes información sobre tu Pokémon favorito." />
+                <div class="mb-3">
+                    <label for="emailTo" class="form-label">Correo destino:</label>
+                    <input type="email" class="form-control" name="emailTo" id="emailTo" required />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Enviar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ======== MODAL CORREO MASIVO ======== -->
+<div class="modal fade" id="bulkEmailModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="post" asp-action="SendBulkEmail" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Enviar Correo Masivo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="emailList" class="form-label">Correos (separados por coma):</label>
+                    <textarea class="form-control"
+                              name="emailList"
+                              id="emailList"
+                              rows="3"
+                              placeholder="a@ejemplo.com, b@ejemplo.com"
+                              required></textarea>
+                </div>
+                <input type="hidden" name="subject" value="Pokémon Destacados" />
+                <input type="hidden" name="body" value="¡Conoce los Pokémon más geniales de la semana!" />
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Enviar Masivo</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Serializar filas actuales para enviar a ExportToExcel
+        function prepareExcelRows() {
+            var rows = [];
+        @foreach (var p in Model.Pokemons)
+        {
+            <text>
+                    rows.push({ Id: @p.Id, Name: "@p.Name", Species: "@p.SpeciesName" });
+            </text>
+        }
+            document.getElementById("excelRowsJson").value = JSON.stringify(rows);
+        }
+
+        // Cargar detalle en modal con AJAX
+        function showDetail(id) {
+            fetch('@Url.Action("Detail", "Pokemon")?id=' + id)
+                .then(res => res.text())
+                .then(html => {
+                    document.getElementById("detailModalBody").innerHTML = html;
+                    new bootstrap.Modal(document.getElementById('detailModal')).show();
+                })
+                .catch(() => alert('Error al cargar detalles.'));
+        }
+
+        // Al abrir modal de correo, limpiar campo
+        var emailModal = document.getElementById('emailModal');
+        emailModal.addEventListener('show.bs.modal', function () {
+            document.getElementById('emailTo').value = '';
+        });
+    </script>
+}

@@ -1,0 +1,413 @@
+﻿/* ======================================
+   Variables Globales para Colores y Tipografía
+   ====================================== */
+:root {
+    --color-primary: #4A90E2;
+    --color-secondary: #F5F5F5;
+    --color-success: #27AE60;
+    --color-danger: #E74C3C;
+    --color-warning: #F39C12;
+    --color-info: #2980B9;
+    --color-text: #333333;
+    --color-bg: #FFFFFF;
+    --color-border: #E0E0E0;
+    --font-base: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* =========================
+   Reset Global
+   ========================= */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-base);
+    background-color: var(--color-secondary);
+    color: var(--color-text);
+    line-height: 1.6;
+    padding: 20px;
+}
+
+/* =========================
+   TÍTULO DE LA PÁGINA
+   ========================= */
+.pokemon-list-title {
+    font-size: 2rem;
+    color: var(--color-primary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* =========================
+   ALERTAS (Success / Danger)
+   ========================= */
+.alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.alert-success {
+    background-color: var(--color-success);
+    color: #FFFFFF;
+}
+
+.alert-danger {
+    background-color: var(--color-danger);
+    color: #FFFFFF;
+}
+
+/* ======================================
+   1. TOOLBAR (Fila Superior: filtros + export + enviar correo)
+   ====================================== */
+.toolbar {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 24px;
+}
+
+/* Bloque izquierdo (filtros + exportar) */
+.toolbar-left {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px; /* Espacio entre el form de filtros y el form de exportar */
+}
+
+/* =========================
+   2. FORMULARIO DE FILTROS
+   ========================= */
+.pokemon-filter-form {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px; /* Separación entre cada campo del filtro */
+    margin: 0;
+    padding: 0;
+}
+
+    /* Cada campo del filtro (label + input/select) */
+    .pokemon-filter-form .filter-field {
+        display: flex;
+        flex-direction: column;
+    }
+
+        .pokemon-filter-form .filter-field label {
+            margin-bottom: 4px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+    /* Input de texto dentro de filtro */
+    .pokemon-filter-form .form-control {
+        padding: 8px 10px;
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        font-size: 0.95rem;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+        .pokemon-filter-form .form-control:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+        }
+
+    /* Select dentro de filtro */
+    .pokemon-filter-form .form-select {
+        padding: 8px 10px;
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        font-size: 0.95rem;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+        .pokemon-filter-form .form-select:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+        }
+
+    /* Botón “Aplicar” */
+    .pokemon-filter-form .btn-primary {
+        padding: 8px 14px;
+        font-size: 0.95rem;
+        border-radius: 6px;
+        background-color: var(--color-primary);
+        color: #FFF;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.2s, transform 0.1s;
+    }
+
+        .pokemon-filter-form .btn-primary:hover {
+            background-color: #3a7ec4; /* Un leve oscuro al color primario */
+            transform: translateY(-1px);
+        }
+
+/* =========================
+   3. FORMULARIO DE “Exportar a Excel”
+   ========================= */
+.pokemon-export-form {
+    margin: 0;
+    padding: 0;
+}
+
+    .pokemon-export-form button.btn-success {
+        padding: 8px 14px;
+        font-size: 0.95rem;
+        border-radius: 6px;
+        background-color: var(--color-success);
+        color: #FFF;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.2s, transform 0.1s;
+    }
+
+        .pokemon-export-form button.btn-success:hover {
+            background-color: #239048; /* Un leve oscuro al color success */
+            transform: translateY(-1px);
+        }
+
+/* =========================
+   4. BOTÓN “Enviar Correo a Todos” (derecha)
+   ========================= */
+.btn-send-all {
+    padding: 8px 16px;
+    font-size: 0.95rem;
+    border-radius: 6px;
+    background-color: var(--color-info);
+    color: #FFF;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+    .btn-send-all:hover {
+        background-color: #23679a; /* Un leve oscuro al color info */
+        transform: translateY(-1px);
+    }
+
+/* ======================================
+   5. TABLA DE POKÉMON
+   ====================================== */
+.pokemon-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #FFFFFF;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 24px;
+}
+
+    .pokemon-table thead {
+        background-color: var(--color-primary);
+    }
+
+        .pokemon-table thead th {
+            color: #FFFFFF;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            padding: 12px;
+            text-align: left;
+        }
+
+    .pokemon-table tbody tr {
+        transition: background-color 0.2s ease-in-out;
+    }
+
+        .pokemon-table tbody tr:nth-child(even) {
+            background-color: #F9F9F9;
+        }
+
+        .pokemon-table tbody tr:hover {
+            background-color: #F1F1F1;
+        }
+
+    .pokemon-table tbody td {
+        padding: 12px;
+        vertical-align: middle;
+    }
+
+/* Imagen del Pokémon */
+.pokemon-img {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 2px solid var(--color-border);
+    object-fit: cover;
+    transition: transform 0.2s ease-in-out;
+}
+
+    .pokemon-img:hover {
+        transform: scale(1.1);
+    }
+
+/* =========================
+   6. PAGINACIÓN
+   ========================= */
+.pagination {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    margin-top: 24px;
+    gap: 8px;
+}
+
+.page-item {
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.page-link {
+    display: block;
+    padding: 8px 12px;
+    background-color: #FFFFFF;
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s ease-in-out;
+}
+
+    .page-link:hover {
+        background-color: #F0F0F0;
+    }
+
+.page-item.active .page-link {
+    background-color: var(--color-primary);
+    color: #FFFFFF;
+    border-color: var(--color-primary);
+}
+
+/* ======================================
+   7. MODALES (si quieres sobrescribir estilos de Bootstrap o entenderlos)
+   ====================================== */
+/* 
+   Nota: estamos usando la estructura de Bootstrap para modales 
+   (clases “modal fade”, “modal-dialog”, “modal-content”, etc.) 
+   Si deseas un estilo totalmente custom, tendrías que redefinir 
+   todas las clases aquí. Para este ejemplo, dejaremos 
+   la apariencia básica de Bootstrap, con algunos ajustes mínimos.
+*/
+
+/* Ajustar el botón de cerrar (X) */
+.modal-header .btn-close {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #FFFFFF;
+}
+/* =========================
+   PAGINACIÓN PERSONALIZADA
+   ========================= */
+
+/* Contenedor UL de paginación */
+.pagination {
+    display: flex; /* Fila horizontal */
+    list-style: none; /* Sin viñetas */
+    padding: 0; /* Quita cualquier padding */
+    margin: 24px 0; /* Separación vertical */
+    gap: 6px; /* Espacio pequeñito entre botones */
+    justify-content: center; /* Centrar en pantalla */
+}
+
+/* Cada LI (página) */
+.page-item {
+    margin: 0; /* Quitar margenes por defecto */
+}
+
+/* Enlace de página (botón) */
+.page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px; /* Ancho mínimo para que sean cuadrados */
+    height: 32px; /* Altura fija igual al ancho para cuadrar */
+    padding: 0; /* Sin padding extra */
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background-color: #FFFFFF;
+    color: var(--color-text);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+    /* Hover sobre página */
+    .page-link:hover {
+        background-color: #F0F0F0;
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+    }
+
+/* Página activa */
+.page-item.active .page-link {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #FFFFFF;
+    cursor: default;
+}
+
+/* Deshabilitado (páginas << / >> inactivas) */
+.page-item.disabled .page-link {
+    background-color: #F5F5F5;
+    border-color: #E0E0E0;
+    color: #BBBBBB;
+    cursor: not-allowed;
+}
+
+    /* Flechas (si las usaras) “Anterior” y “Siguiente” */
+    /* Suponiendo que uses prev/next con <li class="page-item disabled">... */
+    .page-item.disabled .page-link:hover {
+        background-color: #F5F5F5;
+        border-color: #E0E0E0;
+        color: #BBBBBB;
+    }
+
+/* =========================
+   8. RESPONSIVE (Pantallas Pequeñas)
+   ========================= */
+@media (max-width: 768px) {
+    .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .toolbar-left {
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .btn-send-all {
+        width: 100%;
+    }
+
+    .pokemon-filter-form {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
+
+@media (max-width: 576px) {
+    .pagination {
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    .page-link {
+        min-width: 28px;
+        height: 28px;
+        font-size: 0.85rem;
+    }
+}

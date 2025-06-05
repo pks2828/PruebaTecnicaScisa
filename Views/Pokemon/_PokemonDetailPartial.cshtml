@@ -1,0 +1,24 @@
+﻿@model MiPokemonApp.Models.ViewModels.PokemonDetailViewModel
+
+<div class="pokemon-detail">
+    <h3 class="text-capitalize">@Model.Name</h3>
+    <img src="@Model.ImageUrl" alt="@Model.Name" width="150" height="150" class="pokemon-detail-img" />
+
+    <p><strong>Especie:</strong> @Model.Species</p>
+
+    <p><strong>Habilidades:</strong></p>
+    <ul>
+        @foreach (var ability in Model.Abilities)
+        {
+            <li>@ability</li>
+        }
+    </ul>
+
+    <p><strong>Tipos:</strong></p>
+    <ul>
+        @foreach (var type in Model.Types)
+        {
+            <li>@type</li>
+        }
+    </ul>
+</div>
