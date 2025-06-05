@@ -133,42 +133,6 @@ function closeDetailModal() {
 }
 
 
-// ========== FUNCIONES PARA MODAL DE CORREO INDIVIDUAL ==========
-function openEmailModal(pokemonId, pokemonName) {
-    console.log("openEmailModal llamado con:", { pokemonId, pokemonName });
-
-    const modal = document.getElementById('emailModal');
-    if (!modal) {
-        console.error("Modal emailModal no encontrado en el DOM");
-        return;
-    }
-
-    // Rellenar campos
-    const pokemonIdField = document.getElementById('emailPokemonId');
-    const pokemonNameField = document.getElementById('pokemonName');
-    const emailToField = document.getElementById('emailTo');
-
-    if (pokemonIdField) pokemonIdField.value = pokemonId || '';
-    if (pokemonNameField) pokemonNameField.value = pokemonName || '';
-    if (emailToField) emailToField.value = '';
-
-    modal.classList.add('active');
-    modal.setAttribute('aria-hidden', 'false');
-    console.log("Modal de correo abierto (clase .active añadida)");
-}
-
-function closeEmailModal() {
-    console.log("closeEmailModal llamado");
-    const modal = document.getElementById('emailModal');
-    if (modal) {
-        modal.classList.remove('active');
-        modal.setAttribute('aria-hidden', 'true');
-        console.log("Modal de correo cerrado (clase .active removida)");
-    } else {
-        console.error("Modal emailModal no encontrado para cerrar");
-    }
-}
-
 // ========== FUNCIONES PARA MODAL DE CORREO MASIVO ==========
 function openBulkEmailModal() {
     console.log("openBulkEmailModal llamado");

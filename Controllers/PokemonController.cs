@@ -130,41 +130,26 @@ namespace MiPokemonApp.Controllers
         [HttpPost]
         public IActionResult ExportToExcel(string excelRows)
         {
-            var pokemons = JsonConvert.DeserializeObject<List<PokemonExcelRow>>(excelRows);
-            var content = _excelService.GeneratePokemonExcel(pokemons);
-            return File(content,
-                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        "Pokemons.xlsx");
-        }
-
-
-        [HttpPost]
-        public async Task<IActionResult> SendEmail(
-            [FromForm] string emailTo,
-            [FromForm] string subject,
-            [FromForm] string body)
-        {
-            if (string.IsNullOrWhiteSpace(emailTo) ||
-                string.IsNullOrWhiteSpace(subject) ||
-                string.IsNullOrWhiteSpace(body))
-            {
-                TempData["ErrorMessage"] = "Todos los campos son obligatorios.";
-                return RedirectToAction(nameof(Index));
-            }
-
             try
             {
-                await _emailService.SendEmailAsync(emailTo, subject, body);
-                TempData["SuccessMessage"] = "Correo enviado correctamente.";
+                if (string.IsNullOrWhiteSpace(excelRows))
+                    return BadRequest("Los datos para exportar no fueron proporcionados.");
+
+                var pokemons = JsonConvert.DeserializeObject<List<PokemonExcelRow>>(excelRows);
+                if (pokemons == null || !pokemons.Any())
+                    return BadRequest("La lista de datos está vacía o mal formada.");
+
+                var content = _excelService.GeneratePokemonExcel(pokemons);
+
+                return File(content,
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            "Pokemons.xlsx");
             }
             catch (Exception)
             {
-                TempData["ErrorMessage"] = "Error al enviar el correo.";
+                return StatusCode(500, "Ocurrió un error al procesar la exportación.");
             }
-
-            return RedirectToAction(nameof(Index));
         }
-
 
 
         [HttpPost]
