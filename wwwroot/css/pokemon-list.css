@@ -250,42 +250,92 @@ body {
         transform: scale(1.1);
     }
 
+/* Botones del grid */
+.btn-action {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.1s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-right: 8px;
+}
+
+/* Botón Detalle */
+.detail-btn {
+    background-color: #3498db;
+    color: white;
+}
+
+    .detail-btn:hover {
+        background-color: #2980b9;
+    }
+
+/* Botón Enviar Correo */
+.email-btn {
+    background-color: #f39c12;
+    color: white;
+}
+
+    .email-btn:hover {
+        background-color: #d68910;
+    }
+
+/* Efecto al presionar */
+.btn-action:active {
+    transform: scale(0.97);
+}
+
 /* =========================
    6. PAGINACIÓN
    ========================= */
-.pagination {
-    list-style: none;
+.custom-pagination {
     display: flex;
-    justify-content: center;
-    margin-top: 24px;
+    list-style: none;
+    padding: 0;
     gap: 8px;
+    justify-content: center;
+    margin-top: 20px;
+    flex-wrap: wrap;
 }
 
-.page-item {
-    border-radius: 6px;
-    overflow: hidden;
-}
-
-.page-link {
-    display: block;
-    padding: 8px 12px;
-    background-color: #FFFFFF;
-    border: 1px solid var(--color-border);
-    color: var(--color-text);
-    text-decoration: none;
-    font-weight: 500;
-    transition: background-color 0.2s ease-in-out;
-}
-
-    .page-link:hover {
-        background-color: #F0F0F0;
+    .custom-pagination li {
+        margin: 0;
     }
 
-.page-item.active .page-link {
-    background-color: var(--color-primary);
-    color: #FFFFFF;
-    border-color: var(--color-primary);
-}
+    .custom-pagination a,
+    .custom-pagination span {
+        display: inline-block;
+        padding: 8px 12px;
+        text-decoration: none;
+        color: #333;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+        font-family: sans-serif;
+        font-size: 14px;
+    }
+
+        .custom-pagination a:hover {
+            background-color: #eee;
+            cursor: pointer;
+        }
+
+    .custom-pagination .active span {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+        font-weight: bold;
+    }
+
+    .custom-pagination .disabled span {
+        color: #aaa;
+        border-color: #ddd;
+        background-color: #f9f9f9;
+        cursor: not-allowed;
+    }
 
 /* ======================================
    7. MODALES (si quieres sobrescribir estilos de Bootstrap o entenderlos)
@@ -298,14 +348,83 @@ body {
    la apariencia básica de Bootstrap, con algunos ajustes mínimos.
 */
 
-/* Ajustar el botón de cerrar (X) */
-.modal-header .btn-close {
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(3px);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+    .modal-overlay.show {
+        display: flex;
+        opacity: 1;
+    }
+
+/* ========== CONTENEDOR ========== */
+.modal-container {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    max-width: 500px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    transform: translateY(-10px);
+    opacity: 0;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.modal-overlay.show .modal-container {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* ========== CABECERA ========== */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+    .modal-header h5 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #222;
+    }
+
+/* ========== BOTÓN CERRAR ========== */
+.modal-close-btn {
     background: none;
     border: none;
-    font-size: 1.2rem;
+    font-size: 1.5rem;
+    color: #888;
     cursor: pointer;
-    color: #FFFFFF;
+    transition: color 0.2s ease, transform 0.2s ease;
 }
+
+    .modal-close-btn:hover {
+        color: #e74c3c;
+        transform: scale(1.1);
+    }
+
+/* ========== CUERPO ========== */
+.modal-body {
+    padding: 1rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #444;
+}
+
 /* =========================
    PAGINACIÓN PERSONALIZADA
    ========================= */

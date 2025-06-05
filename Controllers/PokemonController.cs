@@ -2,6 +2,7 @@
 using MiPokemonApp.Models.Excel;
 using MiPokemonApp.Models.ViewModels;
 using MiPokemonApp.Services.Interfaces;
+using Newtonsoft.Json;
 
 namespace MiPokemonApp.Controllers
 {
@@ -127,13 +128,15 @@ namespace MiPokemonApp.Controllers
 
 
         [HttpPost]
-        public IActionResult ExportToExcel(List<PokemonExcelRow> excelRows)
+        public IActionResult ExportToExcel(string excelRows)
         {
-            var content = _excelService.GeneratePokemonExcel(excelRows);
+            var pokemons = JsonConvert.DeserializeObject<List<PokemonExcelRow>>(excelRows);
+            var content = _excelService.GeneratePokemonExcel(pokemons);
             return File(content,
                         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                         "Pokemons.xlsx");
         }
+
 
         [HttpPost]
         public async Task<IActionResult> SendEmail(string emailTo, string subject, string body)

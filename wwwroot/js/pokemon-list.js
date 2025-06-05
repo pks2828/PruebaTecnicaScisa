@@ -1,46 +1,110 @@
-﻿// pokemon-list.js
+﻿// wwwroot/js/pokemon-list.js
+console.log("pokemon-list.js → cargado correctamente");
+
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Preparar datos para exportar a Excel
+    // 1) Preparar datos para exportar a Excel
     const exportBtn = document.getElementById('exportExcelBtn');
-    exportBtn?.addEventListener('click', prepareExcelRows);
+    if (exportBtn) {
+        exportBtn.addEventListener('click', prepareExcelRows);
+    }
 
-    // Limpiar email al abrir modal individual
+    // 2) Limpiar email al abrir modal individual
     const emailModal = document.getElementById('emailModal');
     if (emailModal) {
+        // Esto solo aplica si sigues usando Bootstrap para el modal de correo.
         emailModal.addEventListener('show.bs.modal', () => {
-            document.getElementById('emailTo').value = '';
+            const inputEmail = document.getElementById('emailTo');
+            if (inputEmail) {
+                inputEmail.value = '';
+            }
+        });
+    }
+
+    // 3) Registrar clic en overlay para cerrar el modal de detalle
+    const detailModal = document.getElementById('detailModal');
+    if (detailModal) {
+        detailModal.addEventListener('click', function (event) {
+            // Si el clic fue exactamente sobre el overlay (no dentro del contenido), cerramos
+            if (event.target === this) {
+                closeDetailModal();
+            }
         });
     }
 });
 
-// Función para serializar filas visibles para exportar a Excel
+
+// Función para serializar filas visibles y guardarlas en el campo hidden para Excel
 function prepareExcelRows() {
     const rows = [];
     const pokemonRows = document.querySelectorAll('tbody tr');
 
     pokemonRows.forEach(row => {
-        const id = row.querySelector('button[onclick^="showDetail"]').getAttribute('onclick').match(/\d+/)[0];
-        const name = row.querySelector('td:nth-child(2)').textContent.trim();
-        const species = row.querySelector('td:nth-child(3)').textContent.trim();
+        const btnDetalle = row.querySelector('button[onclick^="showDetail"]');
+        let id = null;
+        if (btnDetalle) {
+            const match = btnDetalle.getAttribute('onclick').match(/\d+/);
+            if (match) {
+                id = parseInt(match[0]);
+            }
+        }
 
-        rows.push({ Id: parseInt(id), Name: name, Species: species });
+        const nameCell = row.querySelector('td:nth-child(2)');
+        const speciesCell = row.querySelector('td:nth-child(3)');
+
+        const name = nameCell ? nameCell.textContent.trim() : '';
+        const species = speciesCell ? speciesCell.textContent.trim() : '';
+
+        if (id !== null) {
+            rows.push({ Id: id, Name: name, Species: species });
+        }
     });
 
-    document.getElementById('excelRowsJson').value = JSON.stringify(rows);
+    const hiddenField = document.getElementById('excelRowsJson');
+    if (hiddenField) {
+        hiddenField.value = JSON.stringify(rows);
+    }
+
+    // Enviar el formulario manualmente después de llenar el input
+    document.getElementById('exportForm').submit();
 }
 
-// Cargar detalle en modal con fetch
+
+
+// Función que hace fetch al controlador para obtener el partial y abre el modal
 function showDetail(id) {
     fetch(`/Pokemon/Detail?id=${id}`)
-        .then(res => res.text())
-        .then(html => {
-            document.getElementById('detailModalBody').innerHTML = html;
-            new bootstrap.Modal(document.getElementById('detailModal')).show();
+        .then(res => {
+            if (!res.ok) throw new Error('Error en la respuesta');
+            return res.text();
         })
-        .catch(() => alert('Error al cargar detalles.'));
+        .then(html => {
+            const detailBody = document.getElementById('detailModalBody');
+            if (detailBody) {
+                detailBody.innerHTML = html;
+            }
+            openDetailModal(); // En lugar de style.display, agregamos la clase .show
+        })
+        .catch(() => {
+            alert('Error al cargar detalles.');
+        });
 }
 
-// Exportar la función para que esté disponible en el scope global (para onclick inline)
-window.showDetail = showDetail;
-window.prepareExcelRows = prepareExcelRows;
+// Agrega la clase .show para que tu CSS muestre el overlay y el container
+function openDetailModal() {
+    const modal = document.getElementById('detailModal');
+    if (modal) {
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
+    }
+}
+
+// Quita la clase .show para ocultar el modal
+function closeDetailModal() {
+    const modal = document.getElementById('detailModal');
+    if (modal) {
+        modal.classList.remove('show');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+}
+

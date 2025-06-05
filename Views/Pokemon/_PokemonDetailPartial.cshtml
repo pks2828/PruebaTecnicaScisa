@@ -1,8 +1,13 @@
 ﻿@model MiPokemonApp.Models.ViewModels.PokemonDetailViewModel
+<link rel="stylesheet" href="~/css/pokemon-detail.css" />
 
 <div class="pokemon-detail">
     <h3 class="text-capitalize">@Model.Name</h3>
-    <img src="@Model.ImageUrl" alt="@Model.Name" width="150" height="150" class="pokemon-detail-img" />
+    <img src="@Model.ImageUrl"
+         alt="@Model.Name"
+         width="150"
+         height="150"
+         class="pokemon-detail-img" />
 
     <p><strong>Especie:</strong> @Model.Species</p>
 

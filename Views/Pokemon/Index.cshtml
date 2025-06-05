@@ -1,10 +1,10 @@
 ﻿@model MiPokemonApp.Models.ViewModels.PokemonFilterViewModel
+<link rel="stylesheet" href="~/css/pokemon-list.css" />
 
 @{
     ViewData["Title"] = "Listado de Pokémon";
 }
 
-<link rel="stylesheet" href="~/css/pokemon-list.css" />
 
 <h2 class="pokemon-list-title">Listado de Pokémon</h2>
 
@@ -56,12 +56,17 @@
         </form>
 
         <!-- FORMULARIO DE “Exportar a Excel” -->
-        <form method="post" asp-action="ExportToExcel" class="pokemon-export-form">
+        <form method="post"
+              action="@Url.Action("ExportToExcel", "Pokemon")"
+              id="exportForm"
+              class="pokemon-export-form">
             <input type="hidden" name="excelRows" id="excelRowsJson" />
-            <button type="submit" class="btn-success" onclick="prepareExcelRows()">
+            <button type="button" class="btn-success" id="exportExcelBtn">
                 Exportar a Excel
             </button>
         </form>
+
+
     </div>
 
     <!-- Botón “Enviar Correo a Todos” (derecha) -->
@@ -90,91 +95,78 @@
                 <td class="text-capitalize">@p.Name</td>
                 <td class="text-capitalize">@p.SpeciesName</td>
                 <td>
-                    <button class="btn btn-sm btn-primary" onclick="showDetail(@p.Id)">
+                    <button class="btn-action detail-btn" onclick="showDetail(@p.Id)">
                         Detalle
                     </button>
-                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#emailModal">
+                    <button class="btn-action email-btn" data-bs-toggle="modal" data-bs-target="#emailModal">
                         Enviar Correo
                     </button>
                 </td>
             </tr>
+
         }
     </tbody>
 </table>
 
 <nav aria-label="Paginación">
-    <ul class="pagination">
+    <ul class="custom-pagination">
         @{
             int totalPages = (int)Math.Ceiling(Model.TotalCount / (double)Model.PageSize);
+            int currentPage = Model.PageNumber;
+            int maxPagesToShow = 5;
 
-            // “Anterior” (deshabilitado si page 1)
-            if (Model.PageNumber > 1)
+            int startPage = Math.Max(1, currentPage - maxPagesToShow / 2);
+            int endPage = Math.Min(totalPages, startPage + maxPagesToShow - 1);
+
+            if (endPage - startPage + 1 < maxPagesToShow)
             {
-                <li class="page-item">
-                    <a class="page-link" href="@Url.Action("Index", new { nameFilter = Model.NameFilter, speciesFilter = Model.SelectedSpecies, page = Model.PageNumber - 1 })">
-                        &laquo;
-                    </a>
-                </li>
-            }
-            else
-            {
-                <li class="page-item disabled">
-                    <span class="page-link">&laquo;</span>
-                </li>
+                startPage = Math.Max(1, endPage - maxPagesToShow + 1);
             }
 
-            // Botones de página 1, 2, 3, ...
-            for (int i = 1; i <= totalPages; i++)
+            // Botón "Primero"
+            if (currentPage > 1)
             {
-                if (i == Model.PageNumber)
+                <li><a href="@Url.Action("Index", new { nameFilter = Model.NameFilter, speciesFilter = Model.SelectedSpecies, page = 1 })">« Primero</a></li>
+                <li><a href="@Url.Action("Index", new { nameFilter = Model.NameFilter, speciesFilter = Model.SelectedSpecies, page = currentPage - 1 })">‹ Anterior</a></li>
+            }
+
+            // Páginas del medio
+            for (int i = startPage; i <= endPage; i++)
+            {
+                if (i == currentPage)
                 {
-                    <li class="page-item active">
-                        <span class="page-link">@i</span>
-                    </li>
+                    <li class="active"><span>@i</span></li>
                 }
                 else
                 {
-                    <li class="page-item">
-                        <a class="page-link" href="@Url.Action("Index", new { nameFilter = Model.NameFilter, speciesFilter = Model.SelectedSpecies, page = i })">
-                            @i
-                        </a>
-                    </li>
+                    <li><a href="@Url.Action("Index", new { nameFilter = Model.NameFilter, speciesFilter = Model.SelectedSpecies, page = i })">@i</a></li>
                 }
             }
 
-            // “Siguiente” (deshabilitado si es la última página)
-            if (Model.PageNumber < totalPages)
+            // Botón "Siguiente" y "Último"
+            if (currentPage < totalPages)
             {
-                <li class="page-item">
-                    <a class="page-link" href="@Url.Action("Index", new { nameFilter = Model.NameFilter, speciesFilter = Model.SelectedSpecies, page = Model.PageNumber + 1 })">
-                        &raquo;
-                    </a>
-                </li>
-            }
-            else
-            {
-                <li class="page-item disabled">
-                    <span class="page-link">&raquo;</span>
-                </li>
+                <li><a href="@Url.Action("Index", new { nameFilter = Model.NameFilter, speciesFilter = Model.SelectedSpecies, page = currentPage + 1 })">Siguiente ›</a></li>
+                <li><a href="@Url.Action("Index", new { nameFilter = Model.NameFilter, speciesFilter = Model.SelectedSpecies, page = totalPages })">Último »</a></li>
             }
         }
     </ul>
 </nav>
 
+
 <!-- ======== MODAL DETALLE ======== -->
-<div class="modal fade" id="detailModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Detalle de Pokémon</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="detailModalBody">
-                <!-- Se inyecta el partial de detalles -->
-            </div>
+<div id="detailModal" class="modal-overlay">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h5>Detalle de Pokémon</h5>
+            <button onclick="closeDetailModal()" class="modal-close-btn">&times;</button>
+        </div>
+        <div id="detailModalBody" class="modal-body">
+            <!-- Aquí se inyecta el detalle vía JS -->
         </div>
     </div>
 </div>
+
 
 <!-- ======== MODAL CORREO INDIVIDUAL ======== -->
 <div class="modal fade" id="emailModal" tabindex="-1">
@@ -228,36 +220,4 @@
         </form>
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        // Serializar filas actuales para enviar a ExportToExcel
-        function prepareExcelRows() {
-            var rows = [];
-        @foreach (var p in Model.Pokemons)
-        {
-            <text>
-                    rows.push({ Id: @p.Id, Name: "@p.Name", Species: "@p.SpeciesName" });
-            </text>
-        }
-            document.getElementById("excelRowsJson").value = JSON.stringify(rows);
-        }
-
-        // Cargar detalle en modal con AJAX
-        function showDetail(id) {
-            fetch('@Url.Action("Detail", "Pokemon")?id=' + id)
-                .then(res => res.text())
-                .then(html => {
-                    document.getElementById("detailModalBody").innerHTML = html;
-                    new bootstrap.Modal(document.getElementById('detailModal')).show();
-                })
-                .catch(() => alert('Error al cargar detalles.'));
-        }
-
-        // Al abrir modal de correo, limpiar campo
-        var emailModal = document.getElementById('emailModal');
-        emailModal.addEventListener('show.bs.modal', function () {
-            document.getElementById('emailTo').value = '';
-        });
-    </script>
-}
+<script src="~/js/pokemon-list.js"></script>
