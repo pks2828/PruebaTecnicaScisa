@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MiPokemonApp.Helpers;
 using MiPokemonApp.Models.Excel;
 using MiPokemonApp.Models.ViewModels;
 using MiPokemonApp.Services.Interfaces;
@@ -21,7 +22,6 @@ namespace MiPokemonApp.Controllers
             _excelService = excelService;
             _emailService = emailService;
         }
-
         [HttpGet]
         public async Task<IActionResult> Index(string? nameFilter, string? speciesFilter, int page = 1)
         {
@@ -36,42 +36,28 @@ namespace MiPokemonApp.Controllers
 
             try
             {
-                Console.WriteLine("[DEBUG] Entrando a Index()");
-                Console.WriteLine($"[DEBUG] Parámetros: nameFilter = '{nameFilter}', speciesFilter = '{speciesFilter}', page = {page}");
-
-                // 1. Obtener todas las especies para el dropdown
+                // 1. Obtener especies
                 vm.SpeciesOptions = await _pokeApiService.GetAllSpeciesNamesAsync();
-                Console.WriteLine($"[DEBUG] Se cargaron {vm.SpeciesOptions.Count} especies.");
 
-                // 2. Si hay filtros, necesitamos obtener más datos para filtrar
+                // 2. Definir fetchLimit y offset según filtros
                 int fetchLimit = string.IsNullOrEmpty(nameFilter) && string.IsNullOrEmpty(speciesFilter)
                     ? PageSize
-                    : 100; // Obtener más para tener suficientes después del filtrado
-
+                    : 100;
                 int offset = (page - 1) * PageSize;
-
-                // Si hay filtros, empezar desde 0 para obtener todos los datos necesarios
                 int actualOffset = string.IsNullOrEmpty(nameFilter) && string.IsNullOrEmpty(speciesFilter)
                     ? offset
                     : 0;
 
                 var listResponse = await _pokeApiService.GetPokemonListAsync(actualOffset, fetchLimit);
-                Console.WriteLine($"[DEBUG] PokeAPI devolvió {listResponse.Results.Count} resultados. TotalCount = {listResponse.Count}");
 
+                // 3. Construir lista completa en memoria de la página actual
                 var allGridItems = new List<PokemonGridItemViewModel>();
-
                 foreach (var basic in listResponse.Results)
                 {
                     var segments = basic.Url.TrimEnd('/').Split('/');
-                    if (!int.TryParse(segments.Last(), out int id))
-                    {
-                        Console.WriteLine($"[WARN] No se pudo extraer ID de URL: {basic.Url}");
-                        continue;
-                    }
+                    if (!int.TryParse(segments.Last(), out int id)) continue;
 
-                    // Obtener especie (usa caché)
                     string speciesName = await _pokeApiService.GetSpeciesNameAsync(id);
-
                     string imageUrl = $"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/{id}.png";
 
                     allGridItems.Add(new PokemonGridItemViewModel
@@ -83,48 +69,61 @@ namespace MiPokemonApp.Controllers
                     });
                 }
 
-                // 3. Aplicar filtros
-                var filteredItems = allGridItems.AsQueryable();
-
-                if (!string.IsNullOrEmpty(nameFilter))
-                {
-                    filteredItems = filteredItems.Where(p => p.Name.Contains(nameFilter, StringComparison.OrdinalIgnoreCase));
-                }
-
-                if (!string.IsNullOrEmpty(speciesFilter))
-                {
-                    filteredItems = filteredItems.Where(p => p.SpeciesName.Equals(speciesFilter, StringComparison.OrdinalIgnoreCase));
-                }
-
-                var filteredList = filteredItems.ToList();
-
-                // 4. Aplicar paginación a los resultados filtrados
+                // 4. Si NO hay filtros, usar CreateFromPage para ventaneo
                 if (string.IsNullOrEmpty(nameFilter) && string.IsNullOrEmpty(speciesFilter))
                 {
-                    // Sin filtros, usar los datos tal como vienen
-                    vm.Pokemons = allGridItems;
-                    vm.TotalCount = listResponse.Count;
+                    // a) La lista “allGridItems” ya trae EXACTAMENTE PageSize (20) elementos porque fetchLimit = PageSize
+                    // b) listResponse.Count es el total real de todos los Pokémon (por ejemplo, 115)
+                    var paginated = await PaginatedList<PokemonGridItemViewModel>.CreateFromPage(
+                        pageItems: allGridItems,
+                        totalCount: listResponse.Count,
+                        pageIndex: page,
+                        pageSize: PageSize
+                    );
+
+                    vm.Pokemons = paginated;                 // 20 elementos de esta página
+                    vm.TotalCount = paginated.TotalCount;      // = listResponse.Count
+                    vm.PageNumbers = paginated.PageNumbers;     // rango “ventaneado” (ej. [3,4,5,6,7])
+                    vm.HasPreviousPage = paginated.HasPreviousPage;
+                    vm.HasNextPage = paginated.HasNextPage;
                 }
                 else
                 {
-                    // Con filtros, paginar los resultados filtrados
-                    vm.Pokemons = filteredList.Skip((page - 1) * PageSize).Take(PageSize).ToList();
-                    vm.TotalCount = filteredList.Count;
-                }
+                    // 5. Si HAY filtros, filtrar en memoria y usar CreateAsync normal
+                    var filteredItems = allGridItems.AsQueryable();
+                    if (!string.IsNullOrEmpty(nameFilter))
+                        filteredItems = filteredItems
+                            .Where(p => p.Name.Contains(nameFilter, StringComparison.OrdinalIgnoreCase));
+                    if (!string.IsNullOrEmpty(speciesFilter))
+                        filteredItems = filteredItems
+                            .Where(p => p.SpeciesName.Equals(speciesFilter, StringComparison.OrdinalIgnoreCase));
 
-                Console.WriteLine($"[DEBUG] Total Pokémon después de aplicar filtros: {vm.Pokemons.Count}");
-                Console.WriteLine($"[DEBUG] TotalCount para paginación: {vm.TotalCount}");
+                    var filteredList = filteredItems.ToList();
+
+                    var paginated = await PaginatedList<PokemonGridItemViewModel>.CreateAsync(
+                        filteredList.AsQueryable(),
+                        page,
+                        PageSize
+                    );
+
+                    vm.Pokemons = paginated;
+                    vm.TotalCount = paginated.TotalCount;
+                    vm.PageNumbers = paginated.PageNumbers;
+                    vm.HasPreviousPage = paginated.HasPreviousPage;
+                    vm.HasNextPage = paginated.HasNextPage;
+                }
 
                 return View(vm);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] Ocurrió un error en Index(): {ex.Message}");
-                Console.WriteLine($"[ERROR] StackTrace: {ex.StackTrace}");
                 ViewBag.ErrorMessage = "Ocurrió un error al cargar los datos. Intenta de nuevo más tarde.";
                 return View(vm);
             }
         }
+
+
+
 
 
         [HttpPost]

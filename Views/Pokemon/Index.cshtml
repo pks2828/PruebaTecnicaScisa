@@ -1,87 +1,47 @@
 ﻿@model MiPokemonApp.Models.ViewModels.PokemonFilterViewModel
 <link rel="stylesheet" href="~/css/index.css" />
-
 @{
-    Layout = "~/Views/Shared/_Layout.cshtml";
-    ViewData["Title"] = "Listado de Pokémon";
+    Layout = "~/Views/Shared/_Layout.cshtml"; ViewData["Title"] = "Listado de Pokémon";
 }
-
 <div class="container mt-4">
-    <h2 class="text-center display-5 fw-bold mb-4">
-        Listado de Pokémon
-    </h2>
-
+    <h2 class="text-center display-5 fw-bold mb-4">Listado de Pokémon</h2>
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-        </div>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">@TempData["SuccessMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button></div>
     }
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-        </div>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">@TempData["ErrorMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button></div>
     }
-
     <div class="row align-items-center mb-4">
         <div class="col-md-8">
-            <!-- FORMULARIO DE FILTROS -->
             <form method="get" asp-action="Index" class="row gx-2 gy-2 align-items-end">
                 <div class="col-sm-5 col-md-5">
                     <label for="nameFilter" class="form-label">Filtrar por Nombre:</label>
-                    <input type="text"
-                           name="nameFilter"
-                           id="nameFilter"
-                           value="@Model.NameFilter"
-                           class="form-control"
-                           placeholder="Ej. pikachu" />
+                    <input type="text" name="nameFilter" id="nameFilter" value="@Model.NameFilter" class="form-control" placeholder="Ej. pikachu" />
                 </div>
-
                 <div class="col-sm-4 col-md-4">
                     <label for="speciesFilter" class="form-label">Filtrar por Especie:</label>
-                    <select name="speciesFilter"
-                            id="speciesFilter"
-                            class="form-select">
+                    <select name="speciesFilter" id="speciesFilter" class="form-select">
                         <option value="">-- Todos --</option>
                         @foreach (var sp in Model.SpeciesOptions)
                         {
-                            <option value="@sp" selected="@(sp == Model.SelectedSpecies ? "selected" : null)">
-                                @sp
-                            </option>
-
+                            <option value="@sp" selected="@(sp == Model.SelectedSpecies ? "selected" : null)">@sp</option>
                         }
                     </select>
                 </div>
-
                 <div class="col-sm-3 col-md-3 d-grid">
-                    <button type="submit" class="btn btn-primary">
-                        Aplicar
-                    </button>
+                    <button type="submit" class="btn btn-primary">Aplicar</button>
                 </div>
             </form>
         </div>
         <div class="col-md-4 d-flex justify-content-md-end mt-3 mt-md-0">
-            <!--
-              - Cambiamos el botón a type="button" y le ponemos id="exportExcelBtn"
-              - Mantenemos el <input hidden> con name="excelRows"
-            -->
-            <form asp-controller="Pokemon"
-                  asp-action="ExportToExcel"
-                  method="post"
-                  id="exportForm"
-                  class="d-flex">
+            <form asp-controller="Pokemon" asp-action="ExportToExcel" method="post" id="exportForm" class="d-flex">
                 <input type="hidden" name="excelRows" id="excelRowsJson" />
-                <button type="button" class="btn btn-success me-2" id="exportExcelBtn">
-                    Exportar a Excel
-                </button>
+                <button type="button" class="btn btn-success me-2" id="exportExcelBtn">Exportar a Excel</button>
             </form>
         </div>
     </div>
-
-
     <div class="table-responsive">
         <table class="table table-striped pokemon-table">
             <thead class="table-light">
@@ -96,162 +56,79 @@
                 @foreach (var p in Model.Pokemons)
                 {
                     <tr>
-                        <td class="align-middle">
-                            <img src="@p.ImageUrl"
-                                 alt="@p.Name"
-                                 width="64"
-                                 height="64"
-                                 class="pokemon-img rounded" />
-                        </td>
+                        <td class="align-middle"><img src="@p.ImageUrl" alt="@p.Name" width="64" height="64" class="pokemon-img rounded" /></td>
                         <td class="text-capitalize align-middle">@p.Name</td>
                         <td class="text-capitalize align-middle">@p.SpeciesName</td>
                         <td class="align-middle">
-                            <button type="button"
-                                    class="btn btn-outline-primary btn-sm me-1"
-                                    onclick="showDetail(@p.Id)">
-                                Detalle
-                            </button>
-                            <!-- Botón “Enviar Correo a Todos” dentro de la misma celda -->
-                            <button type="button"
-                                    class="btn btn-outline-secondary btn-sm"
-                                    onclick="openBulkEmailModal()">
-                                    Enviar Correo
-                            </button>
+                            <button type="button" class="btn btn-outline-primary btn-sm me-1" onclick="showDetail(@p.Id)">Detalle</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="openBulkEmailModal()">Enviar Correo</button>
                         </td>
                     </tr>
                 }
             </tbody>
         </table>
     </div>
-
-    <!-- PAGINACIÓN CON BOOTSTRAP -->
-    @{
-        int totalPages = (int)Math.Ceiling(Model.TotalCount / (double)Model.PageSize);
-        int currentPage = Model.PageNumber;
-    }
-    @if (totalPages > 1)
+    @if (Model.PageNumbers?.Count > 0)
     {
         <nav aria-label="Paginación">
             <ul class="pagination justify-content-center mt-4">
-                @* Botón “Primero” *@
-                @if (currentPage > 1)
+                @if (Model.HasPreviousPage)
                 {
-                    <li class="page-item">
-                        <a class="page-link" href="@Url.Action("Index", new { nameFilter = Model.NameFilter, speciesFilter = Model.SelectedSpecies, page = 1 })">
-                            « Primero
-                        </a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="@Url.Action("Index", new { nameFilter = Model.NameFilter, speciesFilter = Model.SelectedSpecies, page = currentPage - 1 })">
-                            ‹
-                        </a>
-                    </li>
+                    <li class="page-item"><a class="page-link" asp-action="Index" asp-route-nameFilter="@Model.NameFilter" asp-route-speciesFilter="@Model.SelectedSpecies" asp-route-page="1">« Primero</a></li>
+                    <li class="page-item"><a class="page-link" asp-action="Index" asp-route-nameFilter="@Model.NameFilter" asp-route-speciesFilter="@Model.SelectedSpecies" asp-route-page="@(Model.PageNumber - 1)">‹</a></li>
                 }
-
-                @* Páginas centrales *@
-                @{
-                    int maxPagesToShow = 5;
-                    int startPage = Math.Max(1, currentPage - maxPagesToShow / 2);
-                    int endPage = Math.Min(totalPages, startPage + maxPagesToShow - 1);
-                    if (endPage - startPage + 1 < maxPagesToShow)
-                    {
-                        startPage = Math.Max(1, endPage - maxPagesToShow + 1);
-                    }
-                }
-                @for (int i = startPage; i <= endPage; i++)
+                else
                 {
-                    if (i == currentPage)
+                    <li class="page-item disabled"><span class="page-link">« Primero</span></li>
+                    <li class="page-item disabled"><span class="page-link">‹</span></li>
+                }
+                @foreach (var i in Model.PageNumbers)
+                {
+                    if (i == Model.PageNumber)
                     {
-                        <li class="page-item active" aria-current="page">
-                            <span class="page-link">@i</span>
-                        </li>
+                        <li class="page-item active" aria-current="page"><span class="page-link">@i</span></li>
                     }
                     else
                     {
-                        <li class="page-item">
-                            <a class="page-link" href="@Url.Action("Index", new { nameFilter = Model.NameFilter, speciesFilter = Model.SelectedSpecies, page = i })">
-                                @i
-                            </a>
-                        </li>
+                        <li class="page-item"><a class="page-link" asp-action="Index" asp-route-nameFilter="@Model.NameFilter" asp-route-speciesFilter="@Model.SelectedSpecies" asp-route-page="@i">@i</a></li>
                     }
                 }
-
-                @* Botones "Siguiente" y "Último" *@
-                @if (currentPage < totalPages)
+                @{
+                    int totalPages = (int)Math.Ceiling(Model.TotalCount / (double)Model.PageSize);
+                }
+                @if (Model.HasNextPage)
                 {
-                    <li class="page-item">
-                        <a class="page-link" href="@Url.Action("Index", new { nameFilter = Model.NameFilter, speciesFilter = Model.SelectedSpecies, page = currentPage + 1 })">
-                            ›
-                        </a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="@Url.Action("Index", new { nameFilter = Model.NameFilter, speciesFilter = Model.SelectedSpecies, page = totalPages })">
-                            Último »
-                        </a>
-                    </li>
+                    <li class="page-item"><a class="page-link" asp-action="Index" asp-route-nameFilter="@Model.NameFilter" asp-route-speciesFilter="@Model.SelectedSpecies" asp-route-page="@(Model.PageNumber + 1)">›</a></li>
+                    <li class="page-item"><a class="page-link" asp-action="Index" asp-route-nameFilter="@Model.NameFilter" asp-route-speciesFilter="@Model.SelectedSpecies" asp-route-page="@totalPages">Último »</a></li>
+                }
+                else
+                {
+                    <li class="page-item disabled"><span class="page-link">›</span></li>
+                    <li class="page-item disabled"><span class="page-link">Último »</span></li>
                 }
             </ul>
         </nav>
     }
-
-    <!-- ==================== MODAL DETALLE ==================== -->
     <div id="detailModal" class="modal-overlay">
         <div class="modal-container">
             <div class="modal-header d-flex justify-content-between align-items-center">
                 <h5 class="modal-title">Detalle de Pokémon</h5>
                 <button type="button" onclick="closeDetailModal()" class="btn-close"></button>
             </div>
-            <div id="detailModalBody" class="modal-body">
-                <!-- Aquí se inyecta el detalle vía JS -->
-            </div>
+            <div id="detailModalBody" class="modal-body"></div>
         </div>
     </div>
-
-    <!-- ============= MODAL CORREO ============ -->
     <div id="bulkEmailModal" class="modal-overlay">
         <div class="modal-container">
             <div class="modal-header d-flex justify-content-between align-items-center">
                 <h5 class="modal-title">Enviar Correo Masivo</h5>
                 <button type="button" onclick="closeBulkEmailModal()" class="btn-close"></button>
             </div>
-
-            <!-- Al form se le envía: emailList, subject y body -->
             <form method="post" asp-action="SendBulkEmail" class="modal-body">
                 @Html.AntiForgeryToken()
-
-                <!-- Campo para el Asunto -->
-                <div class="mb-3">
-                    <label for="subject" class="form-label">Asunto:</label>
-                    <input type="text"
-                           class="form-control"
-                           id="subject"
-                           name="subject"
-                           placeholder="Escribe el asunto del correo"
-                           required />
-                </div>
-
-                <!-- Campo para el Cuerpo del correo -->
-                <div class="mb-3">
-                    <label for="body" class="form-label">Cuerpo del correo:</label>
-                    <textarea class="form-control"
-                              id="body"
-                              name="body"
-                              rows="4"
-                              placeholder="Escribe el mensaje que recibirán los destinatarios"
-                              required></textarea>
-                </div>
-
-                <!-- Campo para la lista de correos separados por coma -->
-                <div class="mb-3">
-                    <label for="emailList" class="form-label">Correos (separados por coma):</label>
-                    <textarea class="form-control"
-                              name="emailList"
-                              id="emailList"
-                              rows="3"
-                              placeholder="a@ejemplo.com, b@ejemplo.com"
-                              required></textarea>
-                </div>
-
+                <div class="mb-3"><label for="subject" class="form-label">Asunto:</label><input type="text" class="form-control" id="subject" name="subject" placeholder="Escribe el asunto del correo" required /></div>
+                <div class="mb-3"><label for="body" class="form-label">Cuerpo del correo:</label><textarea class="form-control" id="body" name="body" rows="4" placeholder="Escribe el mensaje que recibirán los destinatarios" required></textarea></div>
+                <div class="mb-3"><label for="emailList" class="form-label">Correos (separados por coma):</label><textarea class="form-control" name="emailList" id="emailList" rows="3" placeholder="a@ejemplo.com, b@ejemplo.com" required></textarea></div>
                 <div class="modal-footer d-flex justify-content-end gap-2">
                     <button type="submit" class="btn btn-primary">Enviar Masivo</button>
                     <button type="button" onclick="closeBulkEmailModal()" class="btn btn-secondary">Cerrar</button>
@@ -259,7 +136,5 @@
             </form>
         </div>
     </div>
-
 </div>
-
 <script src="~/js/index.js"></script>
