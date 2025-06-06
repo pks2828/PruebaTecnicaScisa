@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using MiPokemonApp.Models.Excel;
 using MiPokemonApp.Models.ViewModels;
 using MiPokemonApp.Services.Implementations;
@@ -15,15 +16,18 @@ namespace MiPokemonApp.Controllers
         private readonly IPokemonService _pokemonService;
         private readonly IExcelService _excelService;
         private readonly IEmailService _emailService;
+        private readonly ILogger<PokemonController> _logger;
 
         public PokemonController(
             IPokemonService pokemonService,
             IExcelService excelService,
-            IEmailService emailService)
+            IEmailService emailService,
+            ILogger<PokemonController> logger) // <-- Inyectado por parámetro
         {
             _pokemonService = pokemonService;
             _excelService = excelService;
             _emailService = emailService;
+            _logger = logger;
         }
 
         /// <summary>
@@ -34,14 +38,17 @@ namespace MiPokemonApp.Controllers
         {
             try
             {
+                _logger.LogInformation("Cargando página {Page} de Pokémon con filtros: nombre={Name}, tipo={Type}",
+                    page, nameFilter, typeFilter);
+
                 var viewModel = await _pokemonService
                     .BuildPokemonFilterViewModelAsync(nameFilter, typeFilter, page);
 
                 return View(viewModel);
             }
-            catch
+            catch (Exception ex)
             {
-                // En caso de error, devolvemos un ViewModel vacío similar a antes
+                _logger.LogError(ex, "Error al cargar la lista de Pokémon en Index");
                 ViewBag.ErrorMessage = "Error al cargar la lista de Pokémon";
                 return View(new PokemonFilterViewModel());
             }
@@ -55,32 +62,47 @@ namespace MiPokemonApp.Controllers
         {
             try
             {
+                _logger.LogInformation("Iniciando ExportToExcel. Recibidos {Count} bytes en excelRows.",
+                    string.IsNullOrWhiteSpace(excelRows) ? 0 : excelRows.Length);
+
                 if (string.IsNullOrWhiteSpace(excelRows))
+                {
+                    _logger.LogWarning("ExportToExcel: excelRows está vacío o nulo.");
                     return BadRequest("No se encontraron datos para exportar.");
+                }
 
                 var pokemons = JsonConvert
                     .DeserializeObject<List<PokemonExcelRow>>(excelRows);
 
                 if (pokemons == null || !pokemons.Any())
+                {
+                    _logger.LogWarning("ExportToExcel: la deserialización devolvió nulo o lista vacía.");
                     return BadRequest("Los datos proporcionados no son válidos.");
+                }
 
+                _logger.LogInformation("ExportToExcel: generando archivo Excel para {Count} Pokémon.", pokemons.Count);
                 var content = _excelService.GeneratePokemonExcel(pokemons);
+
+                _logger.LogInformation("ExportToExcel: archivo Excel generado correctamente.");
                 return File(
                     content,
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     "Pokemons.xlsx"
                 );
             }
-            catch (JsonException)
+            catch (JsonException jsonEx)
             {
+                _logger.LogError(jsonEx, "ExportToExcel: error de JSON al deserializar excelRows.");
                 return BadRequest("Los datos proporcionados no son válidos.");
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "ExportToExcel: error inesperado al generar archivo Excel.");
                 TempData["ErrorMessage"] = "Error al generar archivo Excel";
                 return RedirectToAction(nameof(Index));
             }
         }
+
 
         /// <summary>
         /// Envía correos masivos a múltiples destinatarios
@@ -94,14 +116,14 @@ namespace MiPokemonApp.Controllers
             try
             {
                 // 1. Validar campos con el servicio
-                if (!_pokemonService.ValidateEmailFields(emailList, subject, body))
+                if (!_emailService.ValidateEmailFields(emailList, subject, body))
                 {
                     TempData["ErrorMessage"] = "Todos los campos (correos, asunto y cuerpo) son obligatorios.";
                     return RedirectToAction(nameof(Index));
                 }
 
                 // 2. Parsear lista de correos con el servicio
-                var emails = _pokemonService.ParseAndValidateEmailList(emailList);
+                var emails = _emailService.ParseAndValidateEmailList(emailList);
                 if (!emails.Any())
                 {
                     TempData["ErrorMessage"] = "No se detectaron direcciones de correo válidas.";
@@ -113,8 +135,9 @@ namespace MiPokemonApp.Controllers
                 TempData["SuccessMessage"] = "Correos enviados correctamente.";
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error al enviar correos masivos.");
                 TempData["ErrorMessage"] = "Error al enviar correos masivos.";
                 return RedirectToAction(nameof(Index));
             }
@@ -128,14 +151,16 @@ namespace MiPokemonApp.Controllers
         {
             try
             {
-                var detail = await _pokemonService
-                    .GetPokemonDetailAsync(id.ToString());
+                _logger.LogInformation("Obteniendo detalles del Pokémon con ID {Id}", id);
+                var detail = await _pokemonService.GetPokemonDetailAsync(id.ToString());
                 return PartialView("_PokemonDetailPartial", detail);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Error al obtener detalles del Pokémon con ID {Id}", id);
                 return Content("Error al obtener detalles del Pokémon.");
             }
         }
+
     }
 }

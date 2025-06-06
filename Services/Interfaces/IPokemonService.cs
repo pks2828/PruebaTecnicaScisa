@@ -20,15 +20,5 @@ namespace MiPokemonApp.Services.Interfaces
         /// Obtiene los detalles de un Pokémon (por nombre o ID).
         /// </summary>
         Task<PokemonDetailViewModel> GetPokemonDetailAsync(string nameOrId);
-
-        /// <summary>
-        /// Extrae y valida la lista de correos desde un string separado por comas.
-        /// </summary>
-        List<string> ParseAndValidateEmailList(string emailList);
-
-        /// <summary>
-        /// Valida que los campos para envío masivo de email estén completos.
-        /// </summary>
-        bool ValidateEmailFields(string? emailList, string? subject, string? body);
     }
 }

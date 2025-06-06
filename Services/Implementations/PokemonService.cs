@@ -81,25 +81,6 @@ namespace MiPokemonApp.Services.Implementations
         }
 
         /// <inheritdoc/>
-        public List<string> ParseAndValidateEmailList(string emailList)
-        {
-            if (string.IsNullOrWhiteSpace(emailList))
-                return new List<string>();
-
-            return emailList
-                .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                .Select(e => e.Trim())
-                .Where(e => !string.IsNullOrWhiteSpace(e))
-                .ToList();
-        }
-
-        /// <inheritdoc/>
-        public bool ValidateEmailFields(string? emailList, string? subject, string? body)
-        {
-            return !string.IsNullOrWhiteSpace(emailList)
-                && !string.IsNullOrWhiteSpace(subject)
-                && !string.IsNullOrWhiteSpace(body);
-        }
 
         #region Métodos privados auxiliares
 
