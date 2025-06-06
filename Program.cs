@@ -26,10 +26,6 @@ builder.Services.AddHttpClient<IPokeApiService, PokeApiService>(client =>
 // 4. Registrar nuestros servicios
 builder.Services.AddScoped<IExcelService, ExcelService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
-
-// 5. Registrar SpeciesCache como Singleton
-builder.Services.AddSingleton<SpeciesCache>();
-
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();

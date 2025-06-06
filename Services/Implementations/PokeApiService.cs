@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using MiPokemonApp.Models.PokeApi;
 using MiPokemonApp.Models.ViewModels;
 using MiPokemonApp.Services.Interfaces;
-using Microsoft.Extensions.Caching.Memory;
 
 
 namespace MiPokemonApp.Services.Implementations
@@ -14,12 +13,10 @@ namespace MiPokemonApp.Services.Implementations
     public class PokeApiService : IPokeApiService
     {
         private readonly HttpClient _httpClient;
-        private readonly IMemoryCache _cache;
 
-        public PokeApiService(HttpClient httpClient, IMemoryCache cache)
+        public PokeApiService(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            _cache = cache;
         }
 
         public async Task<PokemonListResponse> GetPokemonListAsync(int offset, int limit)
@@ -110,21 +107,13 @@ namespace MiPokemonApp.Services.Implementations
 
         public async Task<List<string>> GetAllTypesAsync()
         {
-            const string cacheKey = "pokemon_types";
-
-            if (_cache.TryGetValue(cacheKey, out List<string> cachedTypes))
-            {
-                Console.WriteLine("✅ Obtenido desde cache");
-                return cachedTypes;
-            }
-
-            Console.WriteLine("🔄 Obtenido desde API - no estaba en cache");
-
             var types = new List<string>();
+
             try
             {
                 var resp = await _httpClient.GetAsync("type");
                 resp.EnsureSuccessStatusCode();
+
                 using var stream = await resp.Content.ReadAsStreamAsync();
                 using var doc = await JsonDocument.ParseAsync(stream);
 
@@ -133,16 +122,15 @@ namespace MiPokemonApp.Services.Implementations
                     var typeName = item.GetProperty("name").GetString();
                     if (typeName != null) types.Add(typeName);
                 }
-
-                _cache.Set(cacheKey, types, TimeSpan.FromHours(1));
             }
-            catch
+            catch (Exception ex)
             {
-                // Manejo de error
+                Console.WriteLine($"Error al obtener los tipos: {ex.Message}");
             }
 
             return types;
         }
+
 
 
 

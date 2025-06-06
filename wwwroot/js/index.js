@@ -4,6 +4,9 @@ console.log("index.js → cargado correctamente");
 document.addEventListener('DOMContentLoaded', () => {
     console.log("DOM cargado completamente");
 
+    // ========== MANEJO DE ALERTAS ==========
+    initializeAlerts();
+
     // 1) Preparar exportación a Excel
     const exportBtn = document.getElementById('exportExcelBtn');
     exportBtn?.addEventListener('click', prepareExcelRows);
@@ -17,7 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     Object.entries(modals).forEach(([id, modal]) => {
         console.log(`Modal ${id} encontrado:`, !!modal);
-
         // 3) Cerrar al hacer clic fuera del contenido
         modal?.addEventListener('click', (event) => {
             if (event.target === modal) closeModal(id);
@@ -34,6 +36,61 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// ========== MANEJO DE ALERTAS ==========
+function initializeAlerts() {
+    console.log("Inicializando alertas...");
+
+    // Encontrar todas las alertas
+    const alerts = document.querySelectorAll('.alert');
+
+    alerts.forEach(alert => {
+        console.log("Alerta encontrada:", alert);
+
+        // 1) Configurar botón de cerrar manual
+        const closeBtn = alert.querySelector('.btn-close, [data-bs-dismiss="alert"]');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                console.log("Cerrando alerta manualmente");
+                closeAlert(alert);
+            });
+        }
+
+        // 2) Auto-cerrar después de 5 segundos
+        setTimeout(() => {
+            console.log("Auto-cerrando alerta después de 5 segundos");
+            closeAlert(alert);
+        }, 5000);
+    });
+}
+
+function closeAlert(alertElement) {
+    if (!alertElement) return;
+
+    // Agregar clase de fade out si no existe
+    if (!alertElement.classList.contains('fade')) {
+        alertElement.classList.add('fade');
+    }
+
+    // Remover clase 'show' para activar la transición
+    alertElement.classList.remove('show');
+
+    // Esperar a que termine la transición antes de remover del DOM
+    setTimeout(() => {
+        if (alertElement.parentNode) {
+            alertElement.remove();
+            console.log("Alerta removida del DOM");
+        }
+    }, 150); // Bootstrap usa 150ms para la transición
+}
+
+// Función alternativa para cerrar inmediatamente sin transición
+function closeAlertImmediately(alertElement) {
+    if (alertElement && alertElement.parentNode) {
+        alertElement.remove();
+        console.log("Alerta removida inmediatamente");
+    }
+}
+
 // ========== EXPORTACIÓN A EXCEL ==========
 function prepareExcelRows() {
     const rows = [];
@@ -43,7 +100,6 @@ function prepareExcelRows() {
         const btnDetalle = row.querySelector('button[onclick^="showDetail"]');
         const match = btnDetalle?.getAttribute('onclick')?.match(/\d+/);
         const id = match ? parseInt(match[0]) : null;
-
         const name = row.querySelector('td:nth-child(2)')?.textContent.trim() || '';
         const types = row.querySelector('td:nth-child(3)')?.textContent.trim() || '';
 
@@ -54,7 +110,6 @@ function prepareExcelRows() {
 
     const hiddenField = document.getElementById('excelRowsJson');
     if (hiddenField) hiddenField.value = JSON.stringify(rows);
-
     document.getElementById('exportForm')?.submit();
 }
 
@@ -82,6 +137,7 @@ function closeModal(modalId) {
 // ========== MODAL DETALLE ==========
 function showDetail(id) {
     console.log("showDetail llamado con ID:", id);
+
     fetch(`/Pokemon/Detail?id=${id}`)
         .then(res => {
             if (!res.ok) throw new Error('Error en la respuesta');
@@ -108,4 +164,8 @@ function openBulkEmailModal() {
 
 function closeBulkEmailModal() {
     closeModal('bulkEmailModal');
+}
+
+function closeDetailModal() {
+    closeModal('detailModal');
 }

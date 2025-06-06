@@ -79,7 +79,7 @@
     <!-- Tabla de Pokémon (igual que antes) -->
     <div class="table-responsive">
         <table class="table table-striped pokemon-table">
-            <thead class="table-light">
+            <thead class="table-primary">
                 <tr>
                     <th scope="col">Imagen</th>
                     <th scope="col">Nombre</th>
@@ -102,12 +102,12 @@
                         <td class="text-capitalize align-middle">@string.Join(", ", p.Types)</td>
                         <td class="align-middle">
                             <button type="button"
-                                    class="btn btn-outline-primary btn-sm me-1"
+                                    class="btn btn-primary btn-sm me-1"
                                     onclick="showDetail(@p.Id)">
                                 Detalle
                             </button>
                             <button type="button"
-                                    class="btn btn-outline-secondary btn-sm"
+                                    class="btn btn-secondary btn-sm"
                                     onclick="openBulkEmailModal()">
                                 Enviar Correo
                             </button>
@@ -123,5 +123,3 @@
 @Html.Partial("_PaginationPartial", Model)
 @Html.Partial("_DetailModalPartial")
 @Html.Partial("_BulkEmailModalPartial")
-
-<script src="~/js/index.js"></script>
