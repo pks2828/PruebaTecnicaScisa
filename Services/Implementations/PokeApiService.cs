@@ -6,18 +6,20 @@ using System.Threading.Tasks;
 using MiPokemonApp.Models.PokeApi;
 using MiPokemonApp.Models.ViewModels;
 using MiPokemonApp.Services.Interfaces;
+using Microsoft.Extensions.Caching.Memory;
+
 
 namespace MiPokemonApp.Services.Implementations
 {
     public class PokeApiService : IPokeApiService
     {
         private readonly HttpClient _httpClient;
-        private readonly SpeciesCache _speciesCache;
+        private readonly IMemoryCache _cache;
 
-        public PokeApiService(HttpClient httpClient, SpeciesCache speciesCache)
+        public PokeApiService(HttpClient httpClient, IMemoryCache cache)
         {
             _httpClient = httpClient;
-            _speciesCache = speciesCache;
+            _cache = cache;
         }
 
         public async Task<PokemonListResponse> GetPokemonListAsync(int offset, int limit)
@@ -108,6 +110,16 @@ namespace MiPokemonApp.Services.Implementations
 
         public async Task<List<string>> GetAllTypesAsync()
         {
+            const string cacheKey = "pokemon_types";
+
+            if (_cache.TryGetValue(cacheKey, out List<string> cachedTypes))
+            {
+                Console.WriteLine("✅ Obtenido desde cache");
+                return cachedTypes;
+            }
+
+            Console.WriteLine("🔄 Obtenido desde API - no estaba en cache");
+
             var types = new List<string>();
             try
             {
@@ -121,14 +133,18 @@ namespace MiPokemonApp.Services.Implementations
                     var typeName = item.GetProperty("name").GetString();
                     if (typeName != null) types.Add(typeName);
                 }
+
+                _cache.Set(cacheKey, types, TimeSpan.FromHours(1));
             }
             catch
             {
-                // En caso de error, puedes devolver una lista vacía o con "desconocido"
+                // Manejo de error
             }
 
             return types;
         }
+
+
 
         public async Task<List<string>> GetPokemonTypesAsync(int id)
         {
@@ -157,5 +173,26 @@ namespace MiPokemonApp.Services.Implementations
                 return new List<string>();
             }
         }
+        public async Task<List<PokemonBasicInfo>> GetPokemonsByTypeFullAsync(string typeName)
+        {
+            var resp = await _httpClient.GetAsync($"type/{typeName}");
+            resp.EnsureSuccessStatusCode();
+
+            using var stream = await resp.Content.ReadAsStreamAsync();
+            using var doc = await JsonDocument.ParseAsync(stream);
+
+            var list = new List<PokemonBasicInfo>();
+            foreach (var p in doc.RootElement.GetProperty("pokemon").EnumerateArray())
+            {
+                var poke = p.GetProperty("pokemon");
+                var name = poke.GetProperty("name").GetString()!;
+                var url = poke.GetProperty("url").GetString()!;
+                list.Add(new PokemonBasicInfo { Name = name, Url = url });
+            }
+
+            return list;
+        }
+
+
     }
 }

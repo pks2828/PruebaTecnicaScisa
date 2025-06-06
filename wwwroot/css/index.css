@@ -1,88 +1,138 @@
 ﻿/* ------------------------------------------
-   Variables de color (tema Pokémon)
+   Variables de color (nueva paleta)
 -------------------------------------------*/
 :root {
-    /* Neutrales */
-    --color-bg: #FFFFFF; /* blanco puro */
-    --color-text: #0D0D0D; /* casi negro */
-    --color-muted: #6C757D; /* gris medio para textos secundarios */
-    /* Primarios / Branding */
-    --color-primary: #EE3033; /* rojo Poke Ball */
-    --color-primary-hover: #D12A2E; /* un poco más oscuro para hover */
-    /* Secundarios / Acentos */
-    --color-secondary: #4DA0E4; /* azul agua ligera */
-    --color-secondary-hover: #3B8ACA;
-    /* Acentos / Énfasis */
-    --color-accent: #FFCB05; /* amarillo Pikachu */
-    --color-accent-hover: #E6B004;
-    /* Status / Mensajes */
-    --color-success: #7AC74F; /* verde hierba */
-    --color-danger: #DC3545; /* rojo Bootstrap “danger” */
-    --color-warning: #FFC107; /* amarillo Bootstrap “warning” */
-    --color-info: #17A2B8; /* azul Bootstrap “info” */
-    /* Fondos suaves para filas alternas */
-    --color-row-odd: #F8F9FA; /* gris clarito */
-    --color-row-even: #E9ECEF; /* otro gris suave */
+    /* Colores principales */
+    --color-red-dark: #880D1E; /* Rojo muy oscuro (para encabezados, botones fuertes) */
+    --color-red-base: #DD2D4A; /* Rojo medio (para hover, acentos) */
+    --color-pink-strong: #F26A8D; /* Rosa intenso (para botones secundarios) */
+    --color-pink-light: #F49CBB; /* Rosa claro (para filas pares) */
+    --color-blue-soft: #CBEEF3; /* Azul muy suave (para filas impares o fondos ligeros) */
+    /* Variaciones para hover si las necesitas */
+    --color-red-hover: #B01B34; /* Ej.: rojo más vivo al pasar mouse */
+    --color-pink-hover: #E85192; /* Ej.: rosa intenso al pasar mouse */
+    /* Neutrales (fondo y texto) */
+    --color-bg: #FFFFFF; /* Blanco puro para fondo general */
+    --color-text: #0D0D0D; /* Casi negro, para texto principal */
+    --color-muted: #6C757D; /* Gris medio para texto secundario o bordes suaves */
 }
 
 /* ------------------------------------------
-   Tipografía base y fondo
+   Tipografía, fondo y contenedores
 -------------------------------------------*/
 body {
     background-color: var(--color-bg);
     color: var(--color-text);
     font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
 }
 
-/* Sobreescribe variables de Bootstrap si lo deseas */
-/* Por ejemplo: */
-.btn-primary {
-    background-color: var(--color-primary);
-    border-color: var(--color-primary);
+/* Encabezado principal de la página */
+h2.display-5 {
+    color: var(--color-red-dark);
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-    .btn-primary:hover,
-    .btn-primary:focus {
-        background-color: var(--color-primary-hover);
-        border-color: var(--color-primary-hover);
-    }
-
-/* Para btn-success (verde hierba) */
-.btn-success {
-    background-color: var(--color-success);
-    border-color: var(--color-success);
-}
-
-    .btn-success:hover,
-    .btn-success:focus {
-        background-color: darken(var(--color-success), 10%); /* o usa #6BBE3E */
-        border-color: darken(var(--color-success), 10%);
-    }
-
-/* Botones outline que usen el color primario */
-.btn-outline-primary {
-    color: var(--color-primary);
-    border-color: var(--color-primary);
-}
-
-    .btn-outline-primary:hover {
-        background-color: var(--color-primary);
-        color: var(--color-bg);
-    }
-
-/* Encabezados y enlaces destacados */
-h2, h3, h4, h5, h6 {
-    color: var(--color-primary);
-}
 /* Enlaces */
 a {
-    color: var(--color-secondary);
+    color: var(--color-red-base);
     text-decoration: none;
 }
 
     a:hover {
-        color: var(--color-secondary-hover);
+        color: var(--color-red-hover);
         text-decoration: underline;
+    }
+
+/* ------------------------------------------
+   Botones personalizados
+-------------------------------------------*/
+/* Botón primario: fondo rojo oscuro, texto blanco */
+.btn-primary {
+    background-color: var(--color-red-dark);
+    border-color: var(--color-red-dark);
+    color: var(--color-bg);
+    border-radius: 0.375rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+    .btn-primary:hover,
+    .btn-primary:focus {
+        background-color: var(--color-red-base);
+        border-color: var(--color-red-base);
+        color: var(--color-bg);
+    }
+
+/* Botón secundario: fondo rosa intenso, texto blanco */
+.btn-secondary {
+    background-color: var(--color-pink-strong);
+    border-color: var(--color-pink-strong);
+    color: var(--color-bg);
+    border-radius: 0.375rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+    .btn-secondary:hover,
+    .btn-secondary:focus {
+        background-color: var(--color-pink-hover);
+        border-color: var(--color-pink-hover);
+        color: var(--color-bg);
+    }
+
+/* Botones de éxito, advertencia, peligro, etc., mantenemos Bootstrap por defecto
+   o puedes personalizarlos si lo deseas. */
+
+/* Botones outline primario y outline secundario */
+.btn-outline-primary {
+    color: var(--color-red-dark);
+    border-color: var(--color-red-dark);
+    background-color: transparent;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+    .btn-outline-primary:hover {
+        background-color: var(--color-red-dark);
+        color: var(--color-bg);
+    }
+
+.btn-outline-secondary {
+    color: var(--color-pink-strong);
+    border-color: var(--color-pink-strong);
+    background-color: transparent;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+    .btn-outline-secondary:hover {
+        background-color: var(--color-pink-strong);
+        color: var(--color-bg);
+    }
+
+/* Transición suave para todos los botones */
+button,
+.btn {
+    transition: all 0.2s ease-in-out;
+}
+
+/* ------------------------------------------
+   Formularios: inputs y selects
+-------------------------------------------*/
+.form-control,
+.form-select {
+    border: 1px solid var(--color-muted);
+    border-radius: 0.375rem;
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--color-red-base);
+        box-shadow: 0 0 0 0.2rem rgba(221, 45, 74, 0.25); /* rgba de #DD2D4A */
+        outline: none;
     }
 
 /* ------------------------------------------
@@ -91,72 +141,67 @@ a {
 .pokemon-table {
     border-collapse: separate;
     border-spacing: 0 0.5rem; /* separa ligeramente las filas */
+    width: 100%;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
 }
 
-    /* Encabezado de tabla */
+    /* Encabezado de tabla: fondo rojo oscuro, texto blanco */
     .pokemon-table thead {
-        background-color: var(--color-primary);
+        background-color: var(--color-red-dark);
         color: var(--color-bg);
     }
-    /* Bordes de celdas */
-    .pokemon-table th,
-    .pokemon-table td {
-        border: none; /* quita líneas grises */
+
+        .pokemon-table thead th {
+            border: none;
+            padding: 0.75rem 1rem;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+    /* Celdas de tabla */
+    .pokemon-table tbody td {
+        border: none;
         padding: 0.75rem 1rem;
+        color: var(--color-text);
     }
 
-    /* Filas alternas */
+    /* Filas alternas: usa azul suave y rosa claro */
     .pokemon-table tbody tr:nth-child(odd) {
-        background-color: var(--color-row-odd);
+        background-color: var(--color-blue-soft);
     }
 
     .pokemon-table tbody tr:nth-child(even) {
-        background-color: var(--color-row-even);
+        background-color: var(--color-pink-light);
     }
 
-    /* Hover en filas: un azul muy sutil */
+    /* Hover en filas: un tintado ligero de rojo base */
     .pokemon-table tbody tr:hover {
-        background-color: #D1E7FF;
+        background-color: rgba(221, 45, 74, 0.1); /* 10% de rojo base */
     }
 
-    /* Texto de celdas */
-    .pokemon-table td,
-    .pokemon-table th {
-        color: var(--color-text);
-    }
-/* Imágenes */
+/* Imagen dentro de la tabla */
 .pokemon-img {
     border: 2px solid var(--color-muted);
     border-radius: 0.25rem;
 }
 
 /* ------------------------------------------
-   Paginación
+   Paginación (Bootstrap custom)
 -------------------------------------------*/
-/* Reemplazar clases de Bootstrap si quieres los colores del tema */
 .page-link {
-    color: var(--color-primary);
+    color: var(--color-red-dark);
 }
 
 .page-item.active .page-link {
-    background-color: var(--color-primary);
-    border-color: var(--color-primary);
+    background-color: var(--color-red-base);
+    border-color: var(--color-red-base);
     color: var(--color-bg);
-}
-
-/* ------------------------------------------
-   Formularios (inputs y selects)
--------------------------------------------*/
-.form-control:focus,
-.form-select:focus {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 0.2rem rgba(238,48,51,0.25); /* rojo suave translúcido */
 }
 
 /* ------------------------------------------
    Modales transparentes / overlays
 -------------------------------------------*/
-/* Si usas tu propio CSS para .modal-overlay, puedes añadir un fondo semitransparente */
 .modal-overlay {
     display: none;
     position: fixed;
@@ -170,7 +215,6 @@ a {
     align-items: center;
 }
 
-    /* Asegúrate de cubrir tanto .active como .show */
     .modal-overlay.active,
     .modal-overlay.show {
         display: flex;
@@ -178,154 +222,38 @@ a {
 
 .modal-container {
     background-color: var(--color-bg);
-    border: 2px solid var(--color-primary);
     border-radius: 0.5rem;
     width: 500px;
     margin: 2rem auto;
     padding: 1rem;
 }
 
-
 /* ------------------------------------------
-   Botones sólidos con hover animado
+   Ajustes finales y utilidades
 -------------------------------------------*/
-
-/* Base general para todos los botones */
-.btn {
-    transition: all 0.2s ease-in-out;
-    font-weight: 500;
-    border-radius: 0.375rem;
+/* Márgenes y espaciado */
+.mt-4 {
+    margin-top: 1.5rem !important;
 }
 
-/* Botón primario (Rojo Poke Ball) */
-.btn-primary {
-    background-color: var(--color-primary);
-    border-color: var(--color-primary);
-    color: var(--color-bg);
+.mb-4 {
+    margin-bottom: 1.5rem !important;
 }
 
-    .btn-primary:hover,
-    .btn-primary:focus {
-        background-color: var(--color-primary-hover);
-        border-color: var(--color-primary-hover);
-        color: var(--color-bg);
-    }
-
-/* Botón de éxito (Verde hierba) */
-.btn-success {
-    background-color: var(--color-success);
-    border-color: var(--color-success);
-    color: var(--color-bg);
+.me-2 {
+    margin-right: 0.5rem !important;
 }
 
-    .btn-success:hover,
-    .btn-success:focus {
-        background-color: #6BBE3E; /* ligeramente más oscuro */
-        border-color: #6BBE3E;
-    }
-
-/* Botón secundario (Azul agua) */
-.btn-secondary {
-    background-color: var(--color-secondary);
-    border-color: var(--color-secondary);
-    color: var(--color-bg);
+.d-grid {
+    display: grid;
 }
 
-    .btn-secondary:hover,
-    .btn-secondary:focus {
-        background-color: var(--color-secondary-hover);
-        border-color: var(--color-secondary-hover);
-    }
-
-/* Botón de advertencia */
-.btn-warning {
-    background-color: var(--color-warning);
-    border-color: var(--color-warning);
-    color: var(--color-text);
+/* Texto secundario (grises) */
+.text-muted {
+    color: var(--color-muted) !important;
 }
 
-    .btn-warning:hover,
-    .btn-warning:focus {
-        background-color: #e0a800;
-        border-color: #e0a800;
-    }
-
-/* Botón de peligro */
-.btn-danger {
-    background-color: var(--color-danger);
-    border-color: var(--color-danger);
-    color: var(--color-bg);
-}
-
-    .btn-danger:hover,
-    .btn-danger:focus {
-        background-color: #bb2d3b;
-        border-color: #bb2d3b;
-    }
-
-/* Botón de información */
-.btn-info {
-    background-color: var(--color-info);
-    border-color: var(--color-info);
-    color: var(--color-bg);
-}
-
-    .btn-info:hover,
-    .btn-info:focus {
-        background-color: #138496;
-        border-color: #138496;
-    }
-
-/* Botón outline primario */
-.btn-outline-primary {
-    background-color: var(--color-primary);
-    border-color: var(--color-primary);
-    color: var(--color-bg);
-}
-
-    .btn-outline-primary:hover {
-        background-color: var(--color-primary-hover);
-        border-color: var(--color-primary-hover);
-    }
-
-/* Botón outline secundario */
-.btn-outline-secondary {
-    background-color: var(--color-secondary);
-    border-color: var(--color-secondary);
-    color: var(--color-bg);
-}
-
-    .btn-outline-secondary:hover {
-        background-color: var(--color-secondary-hover);
-        border-color: var(--color-secondary-hover);
-    }
-
-/* Botón outline success */
-.btn-outline-success {
-    background-color: var(--color-success);
-    border-color: var(--color-success);
-    color: var(--color-bg);
-}
-
-    .btn-outline-success:hover {
-        background-color: #6BBE3E;
-        border-color: #6BBE3E;
-    }
-
-/* Botón outline danger */
-.btn-outline-danger {
-    background-color: var(--color-danger);
-    border-color: var(--color-danger);
-    color: var(--color-bg);
-}
-
-    .btn-outline-danger:hover {
-        background-color: #bb2d3b;
-        border-color: #bb2d3b;
-    }
-
-/* Suaviza la animación de todos los botones */
-button,
-.btn {
-    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+/* Centrado de encabezados */
+.text-center {
+    text-align: center !important;
 }

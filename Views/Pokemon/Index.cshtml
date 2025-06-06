@@ -2,12 +2,12 @@
 <link rel="stylesheet" href="~/css/index.css" />
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
-    ViewData["Title"] = "Listado de Pokémon";
+    ViewData["Title"] = "Pokémon SCISA";
 }
 
 <div class="container mt-4">
     <!-- Título de la página -->
-    <h2 class="text-center display-5 fw-bold mb-4">Listado de Pokémon</h2>
+    <h2 class="text-center display-5 fw-bold mb-4">Pokémon SCISA</h2>
 
     <!-- Alertas de éxito / error -->
     @if (TempData["SuccessMessage"] != null)
@@ -25,41 +25,58 @@
         </div>
     }
 
-    <!-- Sección de filtros y botón de exportar -->
-    <div class="row align-items-center mb-4">
-        <!-- Filtros de nombre y especie -->
-        <div class="col-md-8">
-            <form method="get" asp-action="Index" class="row gx-2 gy-2 align-items-end">
-                <div class="col-sm-5 col-md-5">
-                    <label for="nameFilter" class="form-label">Filtrar por Nombre:</label>
-                    <input type="text" name="nameFilter" id="nameFilter" value="@Model.NameFilter" class="form-control" placeholder="Ej. pikachu" />
-                </div>
-                <div class="col-sm-3 col-md-3">
-                    <label for="typeFilter" class="form-label">Filtrar por Tipo:</label>
-                    <select name="typeFilter" id="typeFilter" class="form-select">
-                        <option value="">-- Todos --</option>
-                        @foreach (var type in Model.TypeOptions)
-                        {
-                            <option value="@type" selected="@(type == Model.SelectedType ? "selected" : null)">@type</option>
-                        }
-                    </select>
-                </div>
-                <div class="col-sm-3 col-md-3 d-grid">
-                    <button type="submit" class="btn btn-primary">Aplicar</button>
-                </div>
-            </form>
-        </div>
+    <!-- ================================================================= -->
+    <!-- Aquí va UN SOLO FORM para los filtros (nameFilter + typeFilter) -->
+    <!-- ================================================================= -->
+    <div class="row align-items-end mb-4">
+        <!-- Formulario de filtros y botón Excel en una sola fila -->
+        <form method="get" asp-action="Index" class="col-md-5 row gx-2 gy-2">
+            <!-- Filtrar por Nombre -->
+            <div class="col-sm-12 col-md-6">
+                <label for="nameFilter" class="form-label">Filtrar por Nombre:</label>
+                <input type="text"
+                       name="nameFilter"
+                       id="nameFilter"
+                       value="@Model.NameFilter"
+                       class="form-control"
+                       placeholder="Ej. pikachu" />
+            </div>
 
-        <!-- Botón para exportar a Excel -->
-        <div class="col-md-4 d-flex justify-content-md-end mt-3 mt-md-0">
-            <form asp-controller="Pokemon" asp-action="ExportToExcel" method="post" id="exportForm" class="d-flex">
+            <!-- Filtrar por Tipo -->
+            <div class="col-sm-12 col-md-6">
+                <label for="typeFilter" class="form-label">Filtrar por Tipo:</label>
+                <select name="typeFilter"
+                        id="typeFilter"
+                        class="form-select">
+                    <option value="">-- Todos --</option>
+                    @foreach (var type in Model.TypeOptions)
+                    {
+                        <option value="@type"
+                                selected="@(type == Model.SelectedType ? "selected" : null)">
+                            @type
+                        </option>
+                    }
+                </select>
+            </div>
+
+            <!-- Botón Aplicar -->
+            <div class="col-12 mt-2 d-grid">
+                <button type="submit" class="btn btn-primary w-100">Aplicar</button>
+            </div>
+        </form>
+
+        <!-- Botón Exportar Excel -->
+        <div class="col-md-2 offset-md-1 d-grid">
+            <form asp-controller="Pokemon" asp-action="ExportToExcel" method="post" id="exportForm">
                 <input type="hidden" name="excelRows" id="excelRowsJson" />
-                <button type="button" class="btn btn-success me-2" id="exportExcelBtn">Exportar a Excel</button>
+                <button type="button" class="btn btn-success" id="exportExcelBtn">
+                    Exportar a Excel
+                </button>
             </form>
         </div>
     </div>
 
-    <!-- Tabla de Pokémon -->
+    <!-- Tabla de Pokémon (igual que antes) -->
     <div class="table-responsive">
         <table class="table table-striped pokemon-table">
             <thead class="table-light">
@@ -75,29 +92,36 @@
                 {
                     <tr>
                         <td class="align-middle">
-                            <img src="@p.ImageUrl" alt="@p.Name" width="64" height="64" class="pokemon-img rounded" />
+                            <img src="@p.ImageUrl"
+                                 alt="@p.Name"
+                                 width="64"
+                                 height="64"
+                                 class="pokemon-img rounded" />
                         </td>
                         <td class="text-capitalize align-middle">@p.Name</td>
                         <td class="text-capitalize align-middle">@string.Join(", ", p.Types)</td>
                         <td class="align-middle">
-                            <!-- Botones de detalle y envío de correo -->
-                            <button type="button" class="btn btn-outline-primary btn-sm me-1" onclick="showDetail(@p.Id)">Detalle</button>
-                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="openBulkEmailModal()">Enviar Correo</button>
+                            <button type="button"
+                                    class="btn btn-outline-primary btn-sm me-1"
+                                    onclick="showDetail(@p.Id)">
+                                Detalle
+                            </button>
+                            <button type="button"
+                                    class="btn btn-outline-secondary btn-sm"
+                                    onclick="openBulkEmailModal()">
+                                Enviar Correo
+                            </button>
                         </td>
                     </tr>
                 }
             </tbody>
         </table>
     </div>
-
 </div>
-    <!-- Partial: Paginación -->
-    @Html.Partial("_PaginationPartial", Model)
 
-    <!-- Partial: Modal de detalle -->
-    @Html.Partial("_DetailModalPartial")
-
-    <!-- Partial: Modal de envío de correo masivo -->
-    @Html.Partial("_BulkEmailModalPartial")
+<!-- Partials de paginación / modales -->
+@Html.Partial("_PaginationPartial", Model)
+@Html.Partial("_DetailModalPartial")
+@Html.Partial("_BulkEmailModalPartial")
 
 <script src="~/js/index.js"></script>

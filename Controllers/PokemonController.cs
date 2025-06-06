@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using MiPokemonApp.Helpers;
 using MiPokemonApp.Models.Excel;
+using MiPokemonApp.Models.PokeApi;
 using MiPokemonApp.Models.ViewModels;
 using MiPokemonApp.Services.Interfaces;
 using Newtonsoft.Json;
@@ -12,21 +14,40 @@ namespace MiPokemonApp.Controllers
         private readonly IPokeApiService _pokeApiService;
         private readonly IExcelService _excelService;
         private readonly IEmailService _emailService;
+        private readonly IMemoryCache _memoryCache;
+
 
         public PokemonController(
             IPokeApiService pokeApiService,
             IExcelService excelService,
+            IMemoryCache memoryCache,
             IEmailService emailService)
         {
             _pokeApiService = pokeApiService;
             _excelService = excelService;
             _emailService = emailService;
+            _memoryCache = memoryCache;
+
         }
         [HttpGet]
         public async Task<IActionResult> Index(string? nameFilter, string? typeFilter, int page = 1)
         {
             const int PageSize = 20;
 
+            // 1. Montar la clave única para el cache:
+            // Incluimos filtros y página. Para evitar nulls, usamos string.Empty cuando falte.
+            var normalizedName = string.IsNullOrWhiteSpace(nameFilter) ? "" : nameFilter.Trim().ToLowerInvariant();
+            var normalizedType = string.IsNullOrWhiteSpace(typeFilter) ? "" : typeFilter.Trim().ToLowerInvariant();
+            var cacheKey = $"Pokemons_{normalizedName}_{normalizedType}_Page{page}";
+
+            // 2. Intentar leer del cache:
+            if (_memoryCache.TryGetValue(cacheKey, out PokemonFilterViewModel cachedVm))
+            {
+                // Si existe en cache, devolvemos la vista con el ViewModel ya cargado.
+                return View(cachedVm);
+            }
+
+            // 3. Si no está en cache, construimos el ViewModel desde cero:
             var vm = new PokemonFilterViewModel
             {
                 NameFilter = nameFilter,
@@ -37,8 +58,10 @@ namespace MiPokemonApp.Controllers
 
             try
             {
+                // 3.1. Cargar lista de tipos (no cacheada aquí; asumo que GetAllTypesAsync ya usa su propio cache interno).
                 vm.TypeOptions = await _pokeApiService.GetAllTypesAsync();
 
+                // 3.2. Fijar fetchLimit y offset según filtros:
                 int fetchLimit = string.IsNullOrEmpty(nameFilter) && string.IsNullOrEmpty(typeFilter)
                     ? PageSize
                     : 100;
@@ -47,10 +70,23 @@ namespace MiPokemonApp.Controllers
                     ? offset
                     : 0;
 
-                var listResponse = await _pokeApiService.GetPokemonListAsync(actualOffset, fetchLimit);
+                // 3.3. Traer la lista principal (sin filtrar) desde PokeAPI:
+                List<PokemonBasicInfo> pokemonsBasic;
 
+                if (!string.IsNullOrEmpty(typeFilter))
+                {
+                    // Obtenemos todos los pokémon de ese tipo directamente (sin paginar aún)
+                    pokemonsBasic = await _pokeApiService.GetPokemonsByTypeFullAsync(typeFilter);
+                }
+                else
+                {
+                    var listResponse = await _pokeApiService.GetPokemonListAsync(actualOffset, fetchLimit);
+                    pokemonsBasic = listResponse.Results;
+                    vm.TotalCount = listResponse.Count;
+                }
+                // 3.4. Generar los GridItems (await cada llamada a GetPokemonTypesAsync):
                 var allGridItems = new List<PokemonGridItemViewModel>();
-                foreach (var basic in listResponse.Results)
+                foreach (var basic in pokemonsBasic)
                 {
                     var segments = basic.Url.TrimEnd('/').Split('/');
                     if (!int.TryParse(segments.Last(), out int id)) continue;
@@ -67,31 +103,14 @@ namespace MiPokemonApp.Controllers
                     });
                 }
 
-                if (string.IsNullOrEmpty(nameFilter) && string.IsNullOrEmpty(typeFilter))
-                {
-                    var paginated = await PaginatedList<PokemonGridItemViewModel>.CreateFromPage(
-                        pageItems: allGridItems,
-                        totalCount: listResponse.Count,
-                        pageIndex: page,
-                        pageSize: PageSize
-                    );
-
-                    vm.Pokemons = paginated;
-                    vm.TotalCount = paginated.TotalCount;
-                    vm.PageNumbers = paginated.PageNumbers;
-                    vm.HasPreviousPage = paginated.HasPreviousPage;
-                    vm.HasNextPage = paginated.HasNextPage;
-                }
-                else
+                // 3.5. Si no hay filtro, paginar directamente desde la página actual:
+                if (!string.IsNullOrEmpty(nameFilter) || !string.IsNullOrEmpty(typeFilter))
                 {
                     var filteredItems = allGridItems.AsQueryable();
+
                     if (!string.IsNullOrEmpty(nameFilter))
                         filteredItems = filteredItems
                             .Where(p => p.Name.Contains(nameFilter, StringComparison.OrdinalIgnoreCase));
-
-                    if (!string.IsNullOrEmpty(typeFilter))
-                        filteredItems = filteredItems
-                            .Where(p => p.Types.Any(t => t.Equals(typeFilter, StringComparison.OrdinalIgnoreCase)));
 
                     var filteredList = filteredItems.ToList();
 
@@ -107,6 +126,31 @@ namespace MiPokemonApp.Controllers
                     vm.HasPreviousPage = paginated.HasPreviousPage;
                     vm.HasNextPage = paginated.HasNextPage;
                 }
+                else
+                {
+                    var paginated = await PaginatedList<PokemonGridItemViewModel>.CreateFromPage(
+                        pageItems: allGridItems,
+                        totalCount: vm.TotalCount,
+                        pageIndex: page,
+                        pageSize: PageSize
+                    );
+
+                    vm.Pokemons = paginated;
+                    vm.TotalCount = paginated.TotalCount;
+                    vm.PageNumbers = paginated.PageNumbers;
+                    vm.HasPreviousPage = paginated.HasPreviousPage;
+                    vm.HasNextPage = paginated.HasNextPage;
+                }
+
+
+                // 4. Guardar el ViewModel completo en el cache:
+                //    Para que tenga sentido almacenar estado de paginación, guardamos todo `vm`.
+                var cacheOptions = new MemoryCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10),
+                    SlidingExpiration = TimeSpan.FromMinutes(5)
+                };
+                _memoryCache.Set(cacheKey, vm, cacheOptions);
 
                 return View(vm);
             }
