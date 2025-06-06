@@ -15,14 +15,14 @@ namespace MiPokemonApp.Services.Implementations
             // Encabezados
             sheet.Cell(1, 1).Value = "ID";
             sheet.Cell(1, 2).Value = "Nombre";
-            sheet.Cell(1, 3).Value = "Especie";
+            sheet.Cell(1, 3).Value = "Tipos";
 
             int fila = 2;
             foreach (var r in rows)
             {
                 sheet.Cell(fila, 1).Value = r.Id;
                 sheet.Cell(fila, 2).Value = r.Name;
-                sheet.Cell(fila, 3).Value = r.Species;
+                sheet.Cell(fila, 3).Value = r.types;
                 fila++;
             }
 

@@ -11,14 +11,14 @@
                     <a class="page-link"
                        asp-action="Index"
                        asp-route-nameFilter="@Model.NameFilter"
-                       asp-route-speciesFilter="@Model.SelectedSpecies"
+                       asp-route-typeFilter="@Model.SelectedType"
                        asp-route-page="1">« Primero</a>
                 </li>
                 <li class="page-item">
                     <a class="page-link"
                        asp-action="Index"
                        asp-route-nameFilter="@Model.NameFilter"
-                       asp-route-speciesFilter="@Model.SelectedSpecies"
+                       asp-route-typeFilter="@Model.SelectedType"
                        asp-route-page="@(Model.PageNumber - 1)">‹</a>
                 </li>
             }
@@ -43,7 +43,7 @@
                         <a class="page-link"
                            asp-action="Index"
                            asp-route-nameFilter="@Model.NameFilter"
-                           asp-route-speciesFilter="@Model.SelectedSpecies"
+                           asp-route-typeFilter="@Model.SelectedType"
                            asp-route-page="@i">@i</a>
                     </li>
                 }
@@ -61,14 +61,14 @@
                     <a class="page-link"
                        asp-action="Index"
                        asp-route-nameFilter="@Model.NameFilter"
-                       asp-route-speciesFilter="@Model.SelectedSpecies"
+                       asp-route-typeFilter="@Model.SelectedType"
                        asp-route-page="@(Model.PageNumber + 1)">›</a>
                 </li>
                 <li class="page-item">
                     <a class="page-link"
                        asp-action="Index"
                        asp-route-nameFilter="@Model.NameFilter"
-                       asp-route-speciesFilter="@Model.SelectedSpecies"
+                       asp-route-typeFilter="@Model.SelectedType"
                        asp-route-page="@totalPages">Último »</a>
                 </li>
             }

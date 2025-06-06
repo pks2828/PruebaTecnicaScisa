@@ -34,13 +34,13 @@
                     <label for="nameFilter" class="form-label">Filtrar por Nombre:</label>
                     <input type="text" name="nameFilter" id="nameFilter" value="@Model.NameFilter" class="form-control" placeholder="Ej. pikachu" />
                 </div>
-                <div class="col-sm-4 col-md-4">
-                    <label for="speciesFilter" class="form-label">Filtrar por Especie:</label>
-                    <select name="speciesFilter" id="speciesFilter" class="form-select">
+                <div class="col-sm-3 col-md-3">
+                    <label for="typeFilter" class="form-label">Filtrar por Tipo:</label>
+                    <select name="typeFilter" id="typeFilter" class="form-select">
                         <option value="">-- Todos --</option>
-                        @foreach (var sp in Model.SpeciesOptions)
+                        @foreach (var type in Model.TypeOptions)
                         {
-                            <option value="@sp" selected="@(sp == Model.SelectedSpecies ? "selected" : null)">@sp</option>
+                            <option value="@type" selected="@(type == Model.SelectedType ? "selected" : null)">@type</option>
                         }
                     </select>
                 </div>
@@ -78,7 +78,7 @@
                             <img src="@p.ImageUrl" alt="@p.Name" width="64" height="64" class="pokemon-img rounded" />
                         </td>
                         <td class="text-capitalize align-middle">@p.Name</td>
-                        <td class="text-capitalize align-middle">@p.SpeciesName</td>
+                        <td class="text-capitalize align-middle">@string.Join(", ", p.Types)</td>
                         <td class="align-middle">
                             <!-- Botones de detalle y envío de correo -->
                             <button type="button" class="btn btn-outline-primary btn-sm me-1" onclick="showDetail(@p.Id)">Detalle</button>
@@ -90,6 +90,7 @@
         </table>
     </div>
 
+</div>
     <!-- Partial: Paginación -->
     @Html.Partial("_PaginationPartial", Model)
 

@@ -90,16 +90,12 @@ namespace MiPokemonApp.Services.Implementations
                     if (tn != null) types.Add(tn);
                 }
 
-                string speciesUrl = root.GetProperty("species").GetProperty("url").GetString()!;
-                int speciesId = int.Parse(speciesUrl.TrimEnd('/').Split('/').Last());
-                string speciesName = await GetSpeciesNameAsync(speciesId);
 
                 return new PokemonDetailViewModel
                 {
                     Id = id,
                     Name = name,
                     ImageUrl = imageUrl,
-                    Species = speciesName,
                     Abilities = abilities,
                     Types = types
                 };
@@ -110,61 +106,56 @@ namespace MiPokemonApp.Services.Implementations
             }
         }
 
-        public async Task<string> GetSpeciesNameAsync(int speciesIdOrPokemonId)
+        public async Task<List<string>> GetAllTypesAsync()
         {
-            if (_speciesCache.TryGetSpeciesName(speciesIdOrPokemonId, out var cached))
-                return cached;
-
+            var types = new List<string>();
             try
             {
-                var resp = await _httpClient.GetAsync($"pokemon-species/{speciesIdOrPokemonId}");
+                var resp = await _httpClient.GetAsync("type");
                 resp.EnsureSuccessStatusCode();
                 using var stream = await resp.Content.ReadAsStreamAsync();
                 using var doc = await JsonDocument.ParseAsync(stream);
-                string name = doc.RootElement.GetProperty("name").GetString()!;
-                _speciesCache.SetSpeciesName(speciesIdOrPokemonId, name);
-                return name;
+
+                foreach (var item in doc.RootElement.GetProperty("results").EnumerateArray())
+                {
+                    var typeName = item.GetProperty("name").GetString();
+                    if (typeName != null) types.Add(typeName);
+                }
             }
             catch
             {
-                return "desconocido";
+                // En caso de error, puedes devolver una lista vacía o con "desconocido"
             }
+
+            return types;
         }
 
-        public async Task<List<string>> GetAllSpeciesNamesAsync()
+        public async Task<List<string>> GetPokemonTypesAsync(int id)
         {
-            var speciesNames = new List<string>();
-            int offset = 0, limit = 100;
-            bool seguir = true;
-
-            while (seguir)
+            try
             {
-                try
-                {
-                    var resp = await _httpClient.GetAsync($"pokemon-species?offset={offset}&limit={limit}");
-                    resp.EnsureSuccessStatusCode();
-                    using var stream = await resp.Content.ReadAsStreamAsync();
-                    using var doc = await JsonDocument.ParseAsync(stream);
-                    var results = doc.RootElement.GetProperty("results");
-                    if (results.GetArrayLength() == 0) break;
+                var response = await _httpClient.GetAsync($"pokemon/{id}");
+                response.EnsureSuccessStatusCode();
 
-                    foreach (var item in results.EnumerateArray())
-                    {
-                        var nm = item.GetProperty("name").GetString();
-                        if (nm != null) speciesNames.Add(nm);
-                    }
+                using var stream = await response.Content.ReadAsStreamAsync();
+                using var doc = await JsonDocument.ParseAsync(stream);
 
-                    offset += limit;
-                    if (doc.RootElement.GetProperty("next").ValueKind == JsonValueKind.Null)
-                        seguir = false;
-                }
-                catch
+                var types = new List<string>();
+
+                foreach (var typeEntry in doc.RootElement.GetProperty("types").EnumerateArray())
                 {
-                    seguir = false;
+                    var typeName = typeEntry.GetProperty("type").GetProperty("name").GetString();
+                    if (typeName != null)
+                        types.Add(typeName);
                 }
+
+                return types;
             }
-
-            return speciesNames;
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Error al obtener tipos del Pokémon con ID {id}: {ex.Message}");
+                return new List<string>();
+            }
         }
     }
 }

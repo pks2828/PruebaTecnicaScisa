@@ -7,7 +7,7 @@ namespace MiPokemonApp.Services.Interfaces
     {
         Task<PokemonListResponse> GetPokemonListAsync(int offset, int limit);
         Task<PokemonDetailViewModel> GetPokemonDetailAsync(string nameOrId);
-        Task<string> GetSpeciesNameAsync(int speciesIdOrPokemonId);
-        Task<List<string>> GetAllSpeciesNamesAsync();
+        Task<List<string>> GetAllTypesAsync();
+        Task<List<string>> GetPokemonTypesAsync(int id); 
     }
 }
