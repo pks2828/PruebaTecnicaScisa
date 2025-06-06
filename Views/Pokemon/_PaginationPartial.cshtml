@@ -1,0 +1,82 @@
+﻿@model MiPokemonApp.Models.ViewModels.PokemonFilterViewModel
+
+@if (Model.PageNumbers?.Count > 0)
+{
+    <nav aria-label="Paginación">
+        <ul class="pagination justify-content-center mt-4">
+            <!-- “Primero” y “Anterior” -->
+            @if (Model.HasPreviousPage)
+            {
+                <li class="page-item">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-nameFilter="@Model.NameFilter"
+                       asp-route-speciesFilter="@Model.SelectedSpecies"
+                       asp-route-page="1">« Primero</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-nameFilter="@Model.NameFilter"
+                       asp-route-speciesFilter="@Model.SelectedSpecies"
+                       asp-route-page="@(Model.PageNumber - 1)">‹</a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item disabled"><span class="page-link">« Primero</span></li>
+                <li class="page-item disabled"><span class="page-link">‹</span></li>
+            }
+
+            <!-- Números de página centrales -->
+            @foreach (var i in Model.PageNumbers)
+            {
+                if (i == Model.PageNumber)
+                {
+                    <li class="page-item active" aria-current="page">
+                        <span class="page-link">@i</span>
+                    </li>
+                }
+                else
+                {
+                    <li class="page-item">
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-nameFilter="@Model.NameFilter"
+                           asp-route-speciesFilter="@Model.SelectedSpecies"
+                           asp-route-page="@i">@i</a>
+                    </li>
+                }
+            }
+
+            <!-- Cálculo de la última página -->
+            @{
+                int totalPages = (int)Math.Ceiling(Model.TotalCount / (double)Model.PageSize);
+            }
+
+            <!-- “Siguiente” y “Último” -->
+            @if (Model.HasNextPage)
+            {
+                <li class="page-item">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-nameFilter="@Model.NameFilter"
+                       asp-route-speciesFilter="@Model.SelectedSpecies"
+                       asp-route-page="@(Model.PageNumber + 1)">›</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-nameFilter="@Model.NameFilter"
+                       asp-route-speciesFilter="@Model.SelectedSpecies"
+                       asp-route-page="@totalPages">Último »</a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item disabled"><span class="page-link">›</span></li>
+                <li class="page-item disabled"><span class="page-link">Último »</span></li>
+            }
+        </ul>
+    </nav>
+}
