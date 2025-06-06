@@ -53,15 +53,16 @@ namespace MiPokemonApp.Services.Implementations
             // 3. Obtener listado crudo (básico) según filtro de tipo o paginación simple
             var (basicList, totalCount) = await FetchPokemonListAsync(typeFilter, page);
 
-            // 4. Construir items de grilla y paginar
-            var paginated = await BuildAndPaginateGridItemsAsync(basicList, vm);
+            var paginated = await BuildAndPaginateGridItemsAsync(basicList, vm, totalCount);
 
-            // 5. Asignar al ViewModel
-            vm.Pokemons       = paginated;
-            vm.TotalCount     = paginated.TotalCount;
-            vm.PageNumbers    = paginated.PageNumbers;
+            vm.Pokemons = paginated.ToList();
+            vm.TotalCount = paginated.TotalCount;
+            vm.PageNumbers = paginated.PageNumbers;
             vm.HasPreviousPage = paginated.HasPreviousPage;
-            vm.HasNextPage     = paginated.HasNextPage;
+            vm.HasNextPage = paginated.HasNextPage;
+            vm.PageNumber = paginated.PageIndex;
+            vm.PageSize = paginated.PageSize;
+
 
             // 6. Cachear y retornar
             _memoryCache.Set(cacheKey, vm, new MemoryCacheEntryOptions
@@ -106,14 +107,15 @@ namespace MiPokemonApp.Services.Implementations
 
         private async Task<PaginatedList<PokemonGridItemViewModel>> BuildAndPaginateGridItemsAsync(
             List<PokemonBasicInfo> basicList,
-            PokemonFilterViewModel vm)
+            PokemonFilterViewModel vm,
+            int totalCount)
         {
-            // 1. Transformar cada PokemonBasicInfo en PokemonGridItemViewModel
+            // 1. Transformar a GridItem
             var allGridItems = new List<PokemonGridItemViewModel>();
             foreach (var basic in basicList)
             {
                 var segments = basic.Url.TrimEnd('/').Split('/');
-                if (!int.TryParse(segments.Last(), out int id)) 
+                if (!int.TryParse(segments.Last(), out int id))
                     continue;
 
                 var imageUrl = $"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/{id}.png";
@@ -121,21 +123,42 @@ namespace MiPokemonApp.Services.Implementations
 
                 allGridItems.Add(new PokemonGridItemViewModel
                 {
-                    Id       = id,
-                    Name     = basic.Name,
+                    Id = id,
+                    Name = basic.Name,
                     ImageUrl = imageUrl,
-                    Types    = types
+                    Types = types
                 });
             }
 
-            // 2. Aplicar filtro de nombre (si existe)
+            // 2. Filtrado por nombre (si aplica)
             var query = allGridItems.AsQueryable();
             if (!string.IsNullOrEmpty(vm.NameFilter))
                 query = query.Where(p => p.Name.Contains(vm.NameFilter!, StringComparison.OrdinalIgnoreCase));
 
-            // 3. Crear lista paginada usando helper PaginatedList
+            // 3. Detectar si ya viene paginado (sin filtro de tipo)
+            bool alreadyPaginated = string.IsNullOrEmpty(vm.SelectedType);
+
+            if (alreadyPaginated)
+            {
+                // Usar el totalCount correcto traído desde FetchPokemonListAsync
+                return await PaginatedList<PokemonGridItemViewModel>.CreateFromPage(
+                    pageItems: query.ToList(),
+                    totalCount: totalCount,
+                    pageIndex: vm.PageNumber,
+                    pageSize: vm.PageSize
+                );
+            }
+
+            // 4. Si es filtrado por tipo, paginar aquí
+            var filteredList = query.ToList();
+            var pagedItems = filteredList
+                .Skip((vm.PageNumber - 1) * vm.PageSize)
+                .Take(vm.PageSize)
+                .ToList();
+
             return await PaginatedList<PokemonGridItemViewModel>
-                .CreateAsync(query, vm.PageNumber, vm.PageSize);
+                .CreateFromPage(pagedItems, filteredList.Count, vm.PageNumber, vm.PageSize);
+
         }
 
         #endregion
