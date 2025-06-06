@@ -106,10 +106,12 @@ MiPokemonApp
 │    ├─ Interfaces 
 │    │    ├─ IPokeApiService.cs 
 │    │    ├─ IExcelService.cs 
+│    │    ├─ IPokemonService.cs    
 │    │    └─ IEmailService.cs 
 │    │ 
 │    └─ Implementations 
 │         ├─ PokeApiService.cs 
+│         ├─ PokemonService.cs
 │         ├─ EmailService.cs 
 │         └─ ExcelService.cs 
 │ 

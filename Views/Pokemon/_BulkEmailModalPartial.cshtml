@@ -5,24 +5,59 @@
             <h5 class="modal-title">Enviar Correo Masivo</h5>
             <button type="button" onclick="closeBulkEmailModal()" class="btn-close"></button>
         </div>
-        <form method="post" asp-action="SendBulkEmail" class="modal-body">
+        <form method="post"
+              asp-action="SendBulkEmail"
+              class="modal-body"
+              onsubmit="return validateBulkEmailForm()">
+
             @Html.AntiForgeryToken()
+
+            <!-- === ASUNTO === -->
             <div class="mb-3">
                 <label for="subject" class="form-label">Asunto:</label>
-                <input type="text" class="form-control" id="subject" name="subject" placeholder="Escribe el asunto del correo" required />
+                <input type="text"
+                       class="form-control"
+                       id="subject"
+                       name="subject"
+                       placeholder="Escribe el asunto del correo"
+                       required />
+                <div id="error-subject" class="invalid-feedback"></div>
             </div>
+
+            <!-- === CUERPO === -->
             <div class="mb-3">
                 <label for="body" class="form-label">Cuerpo del correo:</label>
-                <textarea class="form-control" id="body" name="body" rows="4" placeholder="Escribe el mensaje que recibirán los destinatarios" required></textarea>
+                <textarea class="form-control"
+                          id="body"
+                          name="body"
+                          rows="4"
+                          placeholder="Escribe el mensaje que recibirán los destinatarios"
+                          required></textarea>
+                <div id="error-body" class="invalid-feedback"></div>
             </div>
+
+            <!-- === LISTA DE CORREOS === -->
             <div class="mb-3">
-                <label for="emailList" class="form-label">Correos (separados por coma):</label>
-                <textarea class="form-control" name="emailList" id="emailList" rows="3" placeholder="a@ejemplo.com, b@ejemplo.com" required></textarea>
+                <label for="emailList" class="form-label">Correo (individual o varios separados por coma):</label>
+                <textarea class="form-control"
+                          name="emailList"
+                          id="emailList"
+                          rows="3"
+                          placeholder="a@ejemplo.com, b@ejemplo.com"
+                          required></textarea>
+                <div id="error-emailList" class="invalid-feedback"></div>
             </div>
+
             <div class="modal-footer d-flex justify-content-end gap-2">
-                <button type="button" onclick="closeBulkEmailModal()" class="btn btn-secondary">Cerrar</button>
+                <button type="button"
+                        onclick="closeBulkEmailModal()"
+                        class="btn btn-secondary">
+                    Cerrar
+                </button>
                 <button type="submit" class="btn btn-primary">Enviar Masivo</button>
             </div>
         </form>
     </div>
 </div>
+
+<script src="~/js/email.js"></script>

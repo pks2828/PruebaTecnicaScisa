@@ -219,7 +219,7 @@ function showDetail(id) {
 /**
  * Abre el modal de envíos masivos de correo, limpiando previamente el campo de lista de correos.
  */
-function openBulkEmailModal() {
+function openBulkEmailModal(pokemonName) {
     openModal('bulkEmailModal', () => {
         const emailListField = document.getElementById('emailList');
         if (emailListField) {
@@ -227,8 +227,16 @@ function openBulkEmailModal() {
         } else {
             console.warn('Campo de lista de correos no encontrado en bulkEmailModal');
         }
+
+        const subjectField = document.getElementById('subject');
+        if (subjectField && pokemonName) {
+            subjectField.value = `Información sobre ${pokemonName}`;
+        } else {
+            console.warn('Campo de asunto no encontrado o nombre de Pokémon no proporcionado');
+        }
     });
 }
+
 
 /**
  * Cierra el modal de envíos masivos de correo.
